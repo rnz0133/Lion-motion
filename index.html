@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%2314130f'/%3E%3Cg fill='none' stroke='%23c9a96a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='20' cy='19.5' r='4.2'/%3E%3Ccircle cx='44' cy='19.5' r='4.2'/%3E%3Cpath d='M32 49.5C22.5 49.5 16 43 16 34 16 25.5 22.5 18.5 32 18.5S48 25.5 48 34C48 43 41.5 49.5 32 49.5Z'/%3E%3Cpath d='M32 18.5v6M26.5 19.8l1.4 5M37.5 19.8l-1.4 5'/%3E%3C/g%3E%3Cpath d='M29 37.5h6L32 41Z' fill='%23c9a96a'/%3E%3Ccircle cx='26' cy='34' r='1.5' fill='%23c9a96a'/%3E%3Ccircle cx='38' cy='34' r='1.5' fill='%23c9a96a'/%3E%3C/svg%3E">
+<title>Lion Motion · Tạo Google Motion Photo</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{-webkit-tap-highlight-color:transparent;font-family:'Inter',sans-serif}
+html{-webkit-text-size-adjust:100%;background:#fff}
+button,input,select,textarea{outline:none}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid #14130f;outline-offset:2px}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#c5cad5;border-radius:9999px}
+.no-select{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+/* Phong cách phẳng: màu đặc, không viền, không đổ bóng, không gradient */
+.panel{background:#fff;border-radius:12px;padding:16px}
+.seg{display:flex;background:#efebe3;border-radius:8px;padding:3px;gap:3px}
+.seg button{flex:1;font-size:12px;font-weight:600;color:#6b7280;padding:8px 6px;border-radius:6px;transition:background .15s,color .15s}
+.seg button.active{background:#14130f;color:#fff}
+.chip{font-size:12px;font-weight:600;color:#374151;background:#efebe3;border-radius:8px;padding:7px 12px;transition:background .15s}
+.chip:hover{background:#e4dfd4}
+.chip.active{background:#14130f;color:#fff}
+.btn-flat{font-size:12px;font-weight:600;border-radius:8px;padding:9px 14px;background:#efebe3;color:#374151;transition:background .15s}
+.btn-flat:hover{background:#e4dfd4}
+.btn-flat:disabled{opacity:.4;cursor:not-allowed}
+.btn-solid{font-size:12px;font-weight:600;border-radius:8px;padding:10px 14px;background:#14130f;color:#fff;transition:background .15s}
+.btn-solid:hover{background:#2c2a24}
+#btnExport{background:#14130f;color:#fff}
+#btnExport:not(:disabled):hover{background:#2c2a24}
+#btnExport:not(:disabled):active{background:#000}
+#btnExport:disabled{background:#d1d5db;color:#6b7280;cursor:not-allowed}
+#btnLive.on{background:#14130f;color:#fff}
+.ovb{font-size:11px;font-weight:600;color:#fff;background:rgba(17,24,39,.78);border-radius:6px;padding:6px 10px;transition:background .15s}
+.ovb:hover{background:#14130f}
+#previewBox{touch-action:pan-y}
+#previewBox.tween{transition:width .3s cubic-bezier(.2,.8,.2,1),height .3s cubic-bezier(.2,.8,.2,1)}
+#previewBox.framing{touch-action:none;cursor:grab}
+#previewBox.framing:active{cursor:grabbing}
+#gridOv{opacity:0;transition:opacity .15s;background-image:
+ linear-gradient(to right,transparent calc(33.333% - .5px),rgba(255,255,255,.4) calc(33.333% - .5px),rgba(255,255,255,.4) calc(33.333% + .5px),transparent calc(33.333% + .5px),transparent calc(66.666% - .5px),rgba(255,255,255,.4) calc(66.666% - .5px),rgba(255,255,255,.4) calc(66.666% + .5px),transparent calc(66.666% + .5px)),
+ linear-gradient(to bottom,transparent calc(33.333% - .5px),rgba(255,255,255,.4) calc(33.333% - .5px),rgba(255,255,255,.4) calc(33.333% + .5px),transparent calc(33.333% + .5px),transparent calc(66.666% - .5px),rgba(255,255,255,.4) calc(66.666% - .5px),rgba(255,255,255,.4) calc(66.666% + .5px),transparent calc(66.666% + .5px))}
+#previewBox.gesturing #gridOv{opacity:1}
+input[type=range]{accent-color:#14130f}
+
+/* Bố cục: 1 cột gọn trên điện thoại; máy tính chia 2 cột (xem trước dính bên trái, thao tác bên phải) */
+#app{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;width:100%;max-width:560px;margin:0 auto;padding:0 12px 20px}
+@media(min-width:1024px){
+ #app:has(#previewPanel:not(.hidden)){max-width:1120px;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:start}
+ #app:has(#previewPanel:not(.hidden)) #previewPanel{grid-column:1;grid-row:1/span 6;position:sticky;top:12px}
+ #app:has(#previewPanel:not(.hidden)) :is(#uploadCard,#textCard,#trimCard,#exportBar){grid-column:2}
+ #exportBar{position:static!important}
+}
+.panel{background:#f6f8fc}
+.hero-step{background:#fff;padding:10px 8px;font-size:11px;font-weight:600;color:#374151;line-height:1.35}
+.hero-step b{display:flex;margin:0 auto 6px;width:22px;height:22px;align-items:center;justify-content:center;background:#14130f;color:#fff;font-size:11px;border-radius:9999px}
+.soc{display:flex;align-items:center;gap:12px;background:#fff;border-radius:12px!important;padding:10px 14px 10px 10px;transition:background .15s,transform .15s;text-align:left;min-width:0}
+.soc:hover{background:#f6f9ff}
+.soc:active{transform:scale(.98)}
+.soc-i{width:40px;height:40px;border-radius:10px!important;display:flex;align-items:center;justify-content:center;flex:none}
+.soc b{display:block;font-size:13px;color:#111827;line-height:1.25}
+.soc span span{display:block;font-size:11px;color:#6b7280}
+.soc .go{margin-left:auto;flex:none;color:#9ca3af;transition:color .15s,transform .15s}
+.soc:hover .go{color:#14130f;transform:translate(2px,-2px)}
+
+/* Văn bản */
+#textColors{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:#efebe3;border-radius:8px;padding:6px 8px}
+.sw{width:26px;height:26px;flex:none}
+#textColorPick{width:26px;height:26px;padding:0;border:0;background:none;cursor:pointer;flex:none}
+.sw.active,#textColorPick.active{outline:2px solid #14130f;outline-offset:2px}
+
+/* Media xem trước: đặt bằng left/top/width/height theo % của khung (KHÔNG dùng object-cover),
+   nên toàn bộ ảnh/video luôn còn nguyên, giống hệt popup cắt và bản xuất. */
+.pm{position:absolute;left:0;top:0;width:100%;height:100%;max-width:none!important;object-fit:fill;pointer-events:none;-webkit-user-drag:none}
+#previewImage{transition:opacity .45s ease-in-out}
+#previewImage.tween{transition:opacity .45s ease-in-out,left .3s cubic-bezier(.2,.8,.2,1),top .3s cubic-bezier(.2,.8,.2,1),width .3s cubic-bezier(.2,.8,.2,1),height .3s cubic-bezier(.2,.8,.2,1)}
+#previewVideo.tween{transition:left .3s cubic-bezier(.2,.8,.2,1),top .3s cubic-bezier(.2,.8,.2,1),width .3s cubic-bezier(.2,.8,.2,1),height .3s cubic-bezier(.2,.8,.2,1)}
+
+/* ===== Popup cắt thủ công ===== */
+#cmStage{position:relative;overflow:hidden;background:#0b0f19;height:clamp(220px,44vh,440px);touch-action:none;cursor:grab;border-radius:8px}
+#cmStage:active{cursor:grabbing}
+.cmM{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none!important;pointer-events:none;will-change:transform;-webkit-user-drag:none}
+#cmFrame{position:absolute;pointer-events:none;border:2px solid #fff;box-shadow:0 0 0 9999px rgba(8,10,18,.68);
+ background-image:
+ linear-gradient(to right,transparent calc(33.333% - .5px),rgba(255,255,255,.35) calc(33.333% - .5px),rgba(255,255,255,.35) calc(33.333% + .5px),transparent calc(33.333% + .5px),transparent calc(66.666% - .5px),rgba(255,255,255,.35) calc(66.666% - .5px),rgba(255,255,255,.35) calc(66.666% + .5px),transparent calc(66.666% + .5px)),
+ linear-gradient(to bottom,transparent calc(33.333% - .5px),rgba(255,255,255,.35) calc(33.333% - .5px),rgba(255,255,255,.35) calc(33.333% + .5px),transparent calc(33.333% + .5px),transparent calc(66.666% - .5px),rgba(255,255,255,.35) calc(66.666% - .5px),rgba(255,255,255,.35) calc(66.666% + .5px),transparent calc(66.666% + .5px))}
+#cmStage.cmtw #cmFrame{transition:width .28s,height .28s,left .28s,top .28s}
+#cmStage.cmtw .cmM{transition:transform .28s,width .28s,height .28s}
+
+/* ===== Video Trimmer: dải film ===== */
+#film{position:relative;touch-action:none;-webkit-user-select:none;user-select:none}
+#filmTop{position:relative;height:30px}
+#selTab{position:absolute;top:3px;left:0;height:24px;min-width:56px;padding:0 10px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:#14130f;color:#fff;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;cursor:grab;white-space:nowrap}
+#film.dragging #selTab{cursor:grabbing}
+#filmTrack{position:relative;height:60px;border-radius:8px;background:#111827;overflow:hidden}
+#thumbStrip{position:absolute;left:14px;right:14px;top:0;bottom:0;display:flex}
+#thumbStrip .th{flex:1 1 0;min-width:0;height:100%;overflow:hidden;background:linear-gradient(90deg,#1f2937,#374151,#1f2937);background-size:200% 100%;animation:shim 1.2s linear infinite}
+#thumbStrip .th.ok{animation:none;background:#111827}
+#thumbStrip img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+@keyframes shim{from{background-position:200% 0}to{background-position:-200% 0}}
+#dimL,#dimR{position:absolute;top:0;bottom:0;background:rgba(17,24,39,.66);pointer-events:none;z-index:2}
+#dimR{right:14px}
+#selWin{position:absolute;top:0;bottom:0;border-top:3px solid #14130f;border-bottom:3px solid #14130f;pointer-events:none;z-index:3}
+#selWin .hdl{position:absolute;top:-3px;bottom:-3px;width:14px;background:#14130f;display:flex;align-items:center;justify-content:center}
+#selWin .hdl.l{left:-14px;border-radius:10px 0 0 10px}
+#selWin .hdl.r{right:-14px;border-radius:0 10px 10px 0}
+#selWin .hdl::after{content:"";width:3px;height:20px;border-radius:2px;background:#fff}
+#playhead{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.35);pointer-events:none;z-index:4}
+#keyMark{position:absolute;top:0;bottom:0;width:3px;margin-left:-1.5px;background:#b8975a;pointer-events:none;z-index:5}
+#keyMark::after{content:"";position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:9999px;background:#b8975a;border:2px solid #fff;box-sizing:border-box}
+.guide-step{display:flex;gap:10px}
+.guide-num{flex:none;width:22px;height:22px;border-radius:9999px;background:#14130f;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+details>summary{list-style:none;cursor:pointer}
+details>summary::-webkit-details-marker{display:none}
+details[open] .chev{transform:rotate(180deg)}
+
+
+.drop{border:2px dashed #cfd4de;border-radius:8px;padding:12px;text-align:center;cursor:pointer;transition:background .15s}
+.drop:hover{background:#f6f7fa}
+/* Bo góc 2px cho toàn bộ trang, trừ header */
+main,main *,main *::before,main *::after,#cropModal,#cropModal *,#progressModal,#progressModal *,#toast{border-radius:2px!important}
+
+/* ================= LION MOTION · Modern Minimalist Luxury ================= */
+:root{--ink:#14130f;--ink2:#2c2a24;--ivory:#fbf9f5;--sand:#efebe3;--line:#e6e0d3;--gold:#a88548;--goldl:#c9a96a;--muted:#77726a;--wine:#7b2d2d}
+html{scroll-behavior:smooth;background:var(--ivory)}
+body{background:var(--ivory)}
+.serif{font-family:'Cormorant Garamond',Georgia,serif}
+body[data-view=home] #app,body[data-view=home] #studioHead{display:none}
+body[data-view=studio] #landing{display:none}
+
+/* Header mỏng */
+#siteHead{position:sticky;top:0;z-index:45;background:rgba(251,249,245,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.hd-row{height:52px;max-width:1120px;margin:0 auto;padding:0 16px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px;color:var(--ink)}
+.brand svg{width:30px;height:30px;flex:none}
+.brand span{font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;font-weight:600;letter-spacing:.24em;line-height:1}
+.menu-btn{width:42px;height:42px;margin-right:-8px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:6px;background:none;padding:0 9px}
+.menu-btn i{display:block;height:1.5px;background:var(--ink);width:22px;transition:width .25s}
+.menu-btn i+i{width:13px}
+.menu-btn:hover i+i{width:22px}
+.ios-bar{background:var(--wine);color:#fff;font-size:11.5px;line-height:1.5;padding:8px 16px;text-align:center}
+.ios-bar[hidden]{display:none}
+
+/* Menu kéo ra */
+.d-ov{position:fixed;inset:0;background:rgba(20,19,15,.45);opacity:0;pointer-events:none;transition:opacity .3s;z-index:70}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(340px,86vw);background:var(--ivory);border-left:1px solid var(--line);transform:translateX(100%);visibility:hidden;transition:transform .38s cubic-bezier(.2,.8,.2,1),visibility 0s .38s;z-index:80;display:flex;flex-direction:column;overflow-y:auto}
+body.d-open .d-ov{opacity:1;pointer-events:auto}
+body.d-open .drawer{transform:none;visibility:visible;transition-delay:0s}
+.d-top{height:52px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--line)}
+.d-close{width:42px;height:42px;margin-right:-10px;display:flex;align-items:center;justify-content:center;background:none;color:var(--ink)}
+.d-body{padding:8px 22px 24px;flex:1}
+.d-link{display:flex;justify-content:space-between;align-items:center;width:100%;padding:18px 0;border-bottom:1px solid var(--line);font-family:'Cormorant Garamond',Georgia,serif;font-size:24px;font-weight:500;color:var(--ink);text-align:left;background:none}
+.d-link small{font-family:'Inter',sans-serif;font-size:10px;letter-spacing:.2em;color:var(--gold)}
+.d-link:hover{color:var(--gold)}
+.d-label{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:28px 0 12px}
+.mi{display:flex;width:100%;justify-content:space-between;align-items:center;gap:12px;padding:15px 14px;border:1px solid var(--line);margin-top:-1px;text-align:left;background:transparent;transition:background .2s}
+.mi:hover{background:var(--sand)}
+.mi b{display:block;font-size:14px;font-weight:600;color:var(--ink)}
+.mi i{display:block;font-style:normal;font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4}
+.mi em{font-style:normal;color:var(--gold);font-size:16px;flex:none}
+.mi.active{background:var(--ink);border-color:var(--ink);position:relative;z-index:1}
+.mi.active b{color:#fff}.mi.active i{color:#b9b3a6}.mi.active em{color:var(--goldl)}
+.d-foot{padding:16px 22px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);line-height:1.6}
+
+/* Landing */
+.lp-wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.eyebrow{font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.lp-hero{padding:44px 0 36px}
+.lp-hero-grid{display:grid;gap:40px;align-items:center}
+@media(min-width:900px){.lp-hero{padding:96px 0 72px}.lp-hero-grid{grid-template-columns:1.2fr .8fr;gap:64px}}
+.lp-h1{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(44px,9.5vw,88px);line-height:1;font-weight:500;color:var(--ink);margin:18px 0 22px;letter-spacing:-.01em}
+.lp-h1 em{font-style:italic;color:var(--gold)}
+.lp-sub{font-size:15px;line-height:1.8;color:var(--muted);max-width:480px}
+.lp-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
+.btn-ink,.btn-line,.btn-ivory{font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;padding:16px 30px;display:inline-flex;align-items:center;justify-content:center;transition:background .2s,color .2s;border-radius:0}
+.btn-ink{background:var(--ink);color:#fff;border:1px solid var(--ink)}
+.btn-ink:hover{background:var(--ink2)}
+.btn-line{border:1px solid var(--ink);color:var(--ink);background:transparent}
+.btn-line:hover{background:var(--ink);color:#fff}
+.btn-ivory{background:var(--ivory);color:var(--ink);border:1px solid var(--ivory)}
+.btn-ivory:hover{background:var(--goldl);border-color:var(--goldl)}
+.hero-art{position:relative;width:min(310px,74vw);aspect-ratio:1;margin:0 auto}
+.hero-art .ring{position:absolute;inset:0;border-radius:50%;border:1px solid var(--goldl)}
+.hero-art .r1{border-style:dashed;animation:lmspin 48s linear infinite}
+.hero-art .r2{inset:7%;opacity:.45}
+.hero-art svg{position:absolute;left:13%;top:13%;width:74%;height:74%}
+@keyframes lmspin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.hero-art .r1{animation:none}html{scroll-behavior:auto}}
+.warn{display:flex;gap:18px;border:1px solid var(--line);border-left:3px solid var(--wine);background:#fff;padding:22px}
+.warn svg{flex:none;width:26px;height:26px;color:var(--wine);margin-top:3px}
+.warn .tag{font-size:10px;letter-spacing:.26em;text-transform:uppercase;font-weight:700;color:var(--wine)}
+.warn h2{font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;line-height:1.15;font-weight:600;color:var(--ink);margin:6px 0 8px}
+.warn p{font-size:13.5px;line-height:1.75;color:#4a463e;max-width:760px}
+.sec{padding:64px 0 8px}
+.sec h2.t{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(32px,5.5vw,50px);line-height:1.08;font-weight:500;color:var(--ink);margin-top:12px}
+.steps{display:grid;gap:0;margin-top:36px}
+@media(min-width:800px){.steps{grid-template-columns:repeat(3,1fr);gap:32px}}
+.step{border-top:1px solid var(--ink);padding:20px 0 26px}
+.step .n{font-family:'Cormorant Garamond',Georgia,serif;font-size:44px;line-height:1;color:var(--gold);font-weight:500}
+.step h3{font-size:14px;font-weight:600;letter-spacing:.04em;color:var(--ink);margin:16px 0 8px}
+.step p{font-size:13px;line-height:1.75;color:var(--muted)}
+.feats{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);margin-top:36px}
+@media(min-width:700px){.feats{grid-template-columns:1fr 1fr}}
+.feat{background:var(--ivory);padding:28px 24px}
+.feat b{display:block;font-family:'Cormorant Garamond',Georgia,serif;font-size:23px;font-weight:600;color:var(--ink)}
+.feat span{display:block;font-size:13px;line-height:1.75;color:var(--muted);margin-top:8px}
+.cta-band{background:var(--ink);margin-top:72px;padding:64px 20px;text-align:center}
+.cta-band h2{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(32px,6vw,54px);font-weight:500;color:var(--ivory);line-height:1.08}
+.cta-band p{font-size:13px;color:#a9a396;margin:14px auto 28px;max-width:420px;line-height:1.7}
+
+/* Đầu trang Studio */
+#studioHead .in{max-width:1120px;margin:0 auto;padding:26px 16px 14px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+#studioHead h2{font-family:'Cormorant Garamond',Georgia,serif;font-size:32px;font-weight:500;color:var(--ink);line-height:1.1;margin-top:6px}
+.back{font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--ink);border-bottom:1px solid var(--ink);padding-bottom:2px;background:none}
+.back:hover{color:var(--gold);border-color:var(--gold)}
+
+/* Footer */
+#siteFoot{background:var(--ink);color:#a9a396;margin-top:auto}
+#siteFoot .in{max-width:1120px;margin:0 auto;padding:48px 20px 28px}
+#siteFoot .top{display:flex;flex-direction:column;gap:32px}
+@media(min-width:800px){#siteFoot .top{flex-direction:row;justify-content:space-between;align-items:flex-start}}
+#siteFoot .brand{color:var(--ivory)}
+#siteFoot p.d{font-size:12px;line-height:1.8;max-width:340px;margin-top:14px}
+#siteFoot .lbl{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--goldl);font-weight:600;margin-bottom:12px}
+#siteFoot .links{display:flex;flex-wrap:wrap;gap:8px 28px}
+#siteFoot .links a{font-size:13px;color:var(--ivory);border-bottom:1px solid #4a463e;padding-bottom:2px;transition:border-color .2s,color .2s}
+#siteFoot .links a:hover{color:var(--goldl);border-color:var(--goldl)}
+#siteFoot .bot{margin-top:40px;padding-top:20px;border-top:1px solid #2c2a24;font-size:11px;display:flex;flex-direction:column;gap:6px}
+@media(min-width:700px){#siteFoot .bot{flex-direction:row;justify-content:space-between}}
+
+/* Làm dịu Studio theo bảng màu mới */
+.panel{background:#fff!important;border:1px solid var(--line)}
+#exportBar{background:var(--ivory)!important}
+#textInput{background:#f4f1ea!important}
+.drop{border-color:#d9d2c3}.drop:hover{background:var(--sand)}
+.text-blue-600,.text-blue-700{color:var(--gold)!important}
+.bg-blue-50,.bg-blue-50\/50{background:#f6f1e6!important}
+.bg-blue-600{background:var(--ink)!important}
+.hover\:bg-blue-700:hover{background:#000!important}
+.border-blue-500{border-color:var(--goldl)!important}
+.group:hover .group-hover\:text-blue-500{color:var(--gold)!important}
+.seg button.active,.chip.active{background:var(--ink);color:#fff}
+@media(min-width:1024px){#app:has(#previewPanel:not(.hidden)) #previewPanel{top:68px!important}}
+.cta-band{margin-top:0!important}
+#landing{flex:1;display:flex;flex-direction:column}
+#landing .cta-band{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+
+/* Nút tải gọn, tinh tế */
+#exportBar{padding-top:10px!important;padding-bottom:10px!important;border-top:1px solid var(--line)}
+#btnExport{padding:12px 18px!important;font-size:11.5px!important;letter-spacing:.18em;text-transform:uppercase;font-weight:600!important;gap:10px}
+#btnExport svg{width:15px!important;height:15px!important;stroke-width:1.75}
+#btnExport:disabled{background:var(--sand)!important;color:#a39e93!important}
+#exportBar>p:last-child{font-size:10px!important;color:#9a958a}
+.opt{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);border:1px solid var(--goldl);padding:2px 7px;margin-left:6px;line-height:1.2}
+</style>
+</head>
+<body data-view="home" class="text-gray-800 min-h-screen flex flex-col antialiased selection:bg-amber-100">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<symbol id="lm-logo" viewBox="0 0 64 64">
+<circle cx="32" cy="32" r="32" fill="#14130f"/><circle cx="32" cy="32" r="29.5" fill="none" stroke="#a88548" stroke-width=".8"/>
+<g fill="none" stroke="#c9a96a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="20" cy="19.5" r="4.2"/><circle cx="44" cy="19.5" r="4.2"/>
+<path d="M32 49.5C22.5 49.5 16 43 16 34 16 25.5 22.5 18.5 32 18.5S48 25.5 48 34C48 43 41.5 49.5 32 49.5Z"/>
+<path d="M32 18.5v6M26.5 19.8l1.4 5M37.5 19.8l-1.4 5M16.4 31h5M17 36.5l4.2-1.3M47.6 31h-5M47 36.5l-4.2-1.3"/>
+<path d="M23 32.5q3-3 6 0M35 32.5q3-3 6 0"/><path d="M32 41v3.2M32 44.2q-2.6 2.4-5 .6M32 44.2q2.6 2.4 5 .6"/></g>
+<path d="M29 37.5h6L32 41Z" fill="#c9a96a"/><circle cx="26" cy="34" r="1.2" fill="#c9a96a"/><circle cx="38" cy="34" r="1.2" fill="#c9a96a"/>
+</symbol></defs></svg>
+<header id="siteHead">
+  <div class="hd-row">
+    <a class="brand" href="#home" data-go="home" aria-label="Lion Motion, trang chủ"><svg aria-hidden="true"><use href="#lm-logo"/></svg><span>LION MOTION</span></a>
+    <button id="menuBtn" class="menu-btn" type="button" aria-label="Mở menu" aria-expanded="false" aria-controls="drawer"><i></i><i></i></button>
+  </div>
+  <p id="iosBar" class="ios-bar" hidden>Bạn đang dùng thiết bị Apple. Lion Motion không dành cho iPhone/iPad: tệp tạo ra sẽ không phát chuyển động trong ứng dụng Ảnh.</p>
+</header>
+
+<div id="dOverlay" class="d-ov"></div>
+<aside id="drawer" class="drawer" aria-hidden="true" aria-label="Menu">
+  <div class="d-top">
+    <span class="brand"><span>MENU</span></span>
+    <button id="dClose" class="d-close" type="button" aria-label="Đóng menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="d-body">
+    <button class="d-link" data-go="home" type="button">Trang chủ <small>01</small></button>
+    <p class="d-label">Tạo Live Photo</p>
+    <div id="modeSeg">
+      <button class="mi active" data-mode="both" type="button"><span><b>Ảnh + Video</b><i>Căn khung ảnh trước, video khớp theo</i></span><em>→</em></button>
+      <button class="mi" data-mode="image" type="button"><span><b>Chỉ ảnh</b><i>Tạo Motion Photo từ một bức ảnh</i></span><em>→</em></button>
+      <button class="mi" data-mode="video" type="button"><span><b>Chỉ video</b><i>Chọn khoảnh khắc làm ảnh chính</i></span><em>→</em></button>
+    </div>
+  </div>
+  <div class="d-foot">Dành cho Android &middot; Google Photos.<br>Không dành cho iPhone.</div>
+</aside>
+
+
+
+<div id="landing"><section class="cta-band">
+  <h2>Sẵn sàng tạo<br>Motion Photo đầu tiên?</h2>
+  <p>Dành cho điện thoại Android. Miễn phí, không cần tài khoản.</p>
+  <button class="btn-ivory" type="button" data-go="studio">Mở Studio</button>
+</section></div>
+
+<div id="studioHead"><div class="in">
+  <div><p class="eyebrow">Studio</p><h2>Tạo Live Photo</h2></div>
+  <button class="back" type="button" data-go="home">&larr; Trang chủ</button>
+</div></div>
+
+<main id="app">
+
+<!-- CỘT TRÁI: bước 1 -->
+<section class="contents">
+  <div id="uploadCard" class="panel flex flex-col gap-4">
+        <div>
+      <div class="flex items-center justify-between gap-2"><div class="text-xs text-gray-500">Chế độ: <b id="modeName" class="text-gray-900">Ảnh + Video</b></div><button id="openModeMenu" type="button" class="chip !py-1.5">Đổi chế độ</button></div>
+      <p id="modeHint" class="text-[11px] text-gray-500 mt-2 leading-relaxed"></p>
+    </div>
+
+    <div id="dropWrap" class="flex flex-col md:flex-row gap-4">
+    <div id="imageCard" class="md:flex-1 min-w-0">
+      <div class="flex items-center justify-between mb-2">
+        <span class="flex items-center gap-1.5 text-sm font-semibold text-gray-700"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>Ảnh tĩnh</span>
+        <span class="flex items-center gap-2"><button id="btnClearImage" class="hidden flex items-center gap-1 text-xs font-semibold text-red-500 hover:underline"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>Xóa</button><span class="text-xs text-gray-400">JPG, PNG, HEIC</span></span>
+      </div>
+      <div id="imageDropArea" class="drop group">
+        <input type="file" id="imageInput" accept="image/jpeg,image/png,image/heic,image/heif,image/webp" class="hidden">
+        <div id="imageInfo" class="space-y-1"></div>
+      </div>
+    </div>
+
+    <div id="videoCard" class="md:flex-1 min-w-0">
+      <div class="flex items-center justify-between mb-2">
+        <span class="flex items-center gap-1.5 text-sm font-semibold text-gray-700"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>Video ngắn</span>
+        <span class="flex items-center gap-2"><button id="btnClearVideo" class="hidden flex items-center gap-1 text-xs font-semibold text-red-500 hover:underline"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>Xóa</button><span class="text-xs text-gray-400">MP4, MOV</span></span>
+      </div>
+      <div id="videoDropArea" class="drop group">
+        <input type="file" id="videoInput" accept="video/*" class="hidden">
+        <div id="videoInfo" class="space-y-1"></div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- CỘT PHẢI: bước 2 và 3 -->
+<section class="contents">
+  <div id="previewPanel" class="hidden panel">
+    <div class="text-sm font-bold text-gray-800 mb-3">Căn khung &amp; xem trước</div>
+
+    <div id="previewStage" class="relative bg-gray-900 rounded-lg flex items-center justify-center overflow-hidden" style="height:clamp(260px,46vh,440px)">
+      <div class="absolute top-2 right-2 z-30 flex flex-col items-end gap-1.5">
+        <button id="btnCropImg" class="hidden ovb flex items-center gap-1.5"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>Cắt lại ảnh</button>
+        <button id="btnReplaceImg" class="hidden ovb flex items-center gap-1.5"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>Đổi ảnh</button>
+        <button id="btnReplaceVid" class="hidden ovb flex items-center gap-1.5"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>Đổi video</button>
+        <button id="btnCropVid" class="hidden ovb flex items-center gap-1.5"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>Căn lại video</button>
+      </div>
+      <div id="previewBox" class="relative bg-black overflow-hidden no-select" style="width:100%;height:100%">
+        <div id="liveBadge" class="absolute top-2.5 left-2.5 z-20 bg-black/50 px-2.5 py-1 rounded-full text-white text-[11px] font-medium flex items-center space-x-1.5 hidden">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m14.31 8 5.74 9.94"/><path d="M9.69 8h11.48"/><path d="m7.38 12 5.74-9.94"/><path d="M9.69 16 3.95 6.06"/><path d="M14.31 16H2.83"/><path d="m16.62 12-5.74 9.94"/></svg><span>MOTION</span>
+        </div>
+        <div id="previewPlaceholder" class="absolute inset-0 z-20 flex flex-col items-center justify-center text-center p-6 space-y-2 pointer-events-none">
+          <div class="w-12 h-12 rounded-full bg-gray-800 text-gray-500 flex items-center justify-center">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+          </div>
+          <p id="placeholderText" class="text-sm text-gray-400"></p>
+        </div>
+        <div id="gridOv" class="absolute inset-0 z-20 pointer-events-none"></div>
+        <canvas id="textOv" class="absolute inset-0 w-full h-full pointer-events-none" style="z-index:15"></canvas>
+        <video id="previewVideo" class="pm z-0 hidden" playsinline muted preload="auto"></video>
+        <img id="previewImage" class="pm z-10 hidden" alt="Ảnh tĩnh" draggable="false">
+      </div>
+    </div>
+
+    <div class="mt-2.5 flex justify-between items-start gap-3 text-xs text-gray-600">
+      <span id="previewStatus">Chưa có đủ tệp</span><span id="previewRatio" class="text-right text-gray-400"></span>
+    </div>
+    <p id="previewHint" class="text-[11px] text-gray-400 mt-0.5 min-h-[14px]"></p>
+
+    <div class="mt-3 flex items-center gap-2">
+      <div id="viewToggle" class="seg hidden" style="width:128px;flex:none"><button data-view="trim" class="active">Cắt</button><button data-view="live">Live</button></div>
+      <button id="btnLive" disabled class="btn-flat flex-1 flex items-center justify-center gap-2">
+        <span id="btnLiveIcon" class="flex"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg></span><span id="btnLiveText">Xem trước Live</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Văn bản -->
+  <div id="textCard" class="hidden panel">
+    <div class="flex items-center justify-between mb-2">
+      <span class="flex items-center gap-1.5 text-sm font-bold text-gray-800"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg>Văn bản <span class="opt">Không bắt buộc</span></span>
+      <button id="btnTextClear" class="hidden text-xs font-semibold text-red-500 hover:underline">Xóa chữ</button>
+    </div>
+    <textarea id="textInput" rows="2" maxlength="200" placeholder="Không bắt buộc. Nhập chữ hiển thị trên ảnh và video..." class="w-full bg-[#eef0f4] text-gray-800 text-base rounded-lg px-3 py-2.5 resize-none placeholder-gray-400"></textarea>
+    <div class="mt-3 space-y-3">
+      <div class="flex items-center gap-2"><span class="text-xs text-gray-500 w-16 flex-none">Phông chữ</span><select id="textFont" class="flex-1 min-w-0 bg-[#efebe3] text-gray-800 text-xs font-semibold px-2.5 py-2"></select></div>
+      <div class="flex items-center gap-2"><span class="w-16 flex-none"></span><button id="btnFontUpload" type="button" class="chip !py-1.5">Nhập phông từ thiết bị</button><span id="fontName" class="text-[11px] text-gray-400 truncate min-w-0"></span><input type="file" id="fontInput" accept=".ttf,.otf,.woff,.woff2,font/*" class="hidden"></div>
+      <div class="flex items-center gap-2"><span class="text-xs text-gray-500 w-16 flex-none">Màu chữ</span><div id="textColors"><input type="color" id="textColorPick" value="#ffffff" aria-label="Chọn màu khác"></div></div>
+      <div class="flex items-center gap-2"><span class="text-xs text-gray-500 w-16 flex-none">Cỡ chữ</span><input type="range" id="textSize" min="3" max="14" step="0.5" value="6" class="flex-1 min-w-0"><span id="textSizeVal" class="text-xs font-mono text-gray-500 w-10 text-right">6%</span></div>
+      <div class="seg" id="textBgSeg"><button data-bg="none">Không nền</button><button data-bg="bar" class="active">Thanh đen (Snapchat)</button></div>
+      <div id="textBarRow" class="flex items-center gap-2"><span class="text-xs text-gray-500 w-16 flex-none">Độ mờ đục</span><input type="range" id="textBarOp" min="0" max="100" step="1" value="60" class="flex-1 min-w-0"><span id="textBarOpVal" class="text-xs font-mono text-gray-500 w-10 text-right">60%</span></div>
+      <p class="text-[11px] text-gray-400 leading-relaxed">Kéo chữ trên khung xem trước để đổi vị trí (thanh đen chỉ kéo lên/xuống). Chữ được in lên cả ảnh tĩnh và video khi xuất.</p>
+    </div>
+  </div>
+
+  <!-- Trimmer -->
+  <div id="trimCard" class="hidden panel">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-sm font-bold text-gray-800">Cắt video &amp; chọn ảnh chính</span>
+      <span id="trimHint" class="text-[11px] font-semibold px-2 py-0.5 rounded-full"></span>
+    </div>
+
+    <div id="film">
+      <div id="filmTop">
+        <div id="selTab">
+          <svg class="w-3.5 h-3.5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18 8 22 12 18 16"/><polyline points="6 8 2 12 6 16"/><line x1="2" x2="22" y1="12" y2="12"/></svg>
+          <span id="selTabText">0.0s</span>
+        </div>
+      </div>
+      <div id="filmTrack">
+        <div id="thumbStrip"></div>
+        <div id="dimL"></div>
+        <div id="dimR"></div>
+        <div id="selWin"><div class="hdl l"></div><div class="hdl r"></div></div>
+        <div id="playhead"></div>
+        <div id="keyMark" class="hidden"></div>
+      </div>
+    </div>
+
+    <div class="mt-3 flex items-start gap-2 text-xs font-semibold text-blue-700 bg-blue-50 rounded-lg px-3 py-2">
+      <svg class="w-4 h-4 flex-none mt-px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      <span id="trimGuideText"></span>
+    </div>
+
+    <div class="grid grid-cols-3 gap-2 mt-3 text-center">
+      <div class="bg-gray-100 rounded-lg py-1.5"><div class="text-[10px] text-gray-500">Bắt đầu</div><div id="tStart" class="text-xs font-mono font-semibold text-gray-700">0:00.00</div></div>
+      <div class="bg-gray-100 rounded-lg py-1.5"><div class="text-[10px] text-gray-500">Độ dài</div><div id="tLen" class="text-xs font-mono font-semibold text-blue-600">0.00s</div></div>
+      <div class="bg-gray-100 rounded-lg py-1.5"><div class="text-[10px] text-gray-500">Kết thúc</div><div id="tEnd" class="text-xs font-mono font-semibold text-gray-700">0:00.00</div></div>
+    </div>
+
+    <div id="keyRow" class="hidden mt-3 flex items-center justify-between gap-2 bg-gray-100 rounded-lg px-3 py-2">
+      <div class="flex items-center gap-2 text-xs text-gray-600"><span class="w-2.5 h-2.5 rounded-full" style="background:#b8975a"></span>Ảnh chính tại <span id="tKey" class="font-mono font-semibold text-gray-700">0:00.00</span></div>
+      <div class="flex gap-1.5"><button id="keyPrev" class="chip !py-1 !px-2.5 !bg-white">−0.1s</button><button id="keyNext" class="chip !py-1 !px-2.5 !bg-white">+0.1s</button></div>
+    </div>
+
+    <p class="text-[11px] text-gray-400 mt-2 leading-relaxed">Kéo <b>nhãn số giây</b> phía trên (hoặc chạm vùng ngoài hộp) để trượt đoạn chọn. Kéo hai mép xanh để đổi độ dài, tối đa 10 giây.</p>
+  </div>
+
+  <!-- Bước 3: xuất (dính đáy màn hình) -->
+  <div id="exportBar" class="sticky bottom-0 z-20 py-3 bg-white space-y-2">
+    <div class="flex items-center gap-2"><span class="text-xs text-gray-500 flex-none">Tốc độ xuất</span><div class="seg flex-1" id="qualSeg"><button data-q="fast" class="active">Nhanh (1280px)</button><button data-q="hq">Nét hơn (1920px)</button></div></div>
+    <p id="mp4Warn" class="hidden flex items-start gap-2 text-[11px] leading-relaxed text-amber-800 bg-amber-100 rounded-lg p-2.5"><span class="flex-none mt-px"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span><span>Trình duyệt này không ghi được video MP4 (H.264). Hãy dùng Chrome/Edge 126+ hoặc Safari mới.</span></p>
+    <button id="btnExport" disabled class="w-full font-semibold py-3.5 px-4 rounded-lg transition flex items-center justify-center space-x-2">
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+      <span>Tải Motion Photo</span>
+    </button>
+    <p class="text-[11px] text-gray-500 text-center leading-snug">Một tệp .jpg duy nhất, nhúng video MP4 và XMP chuẩn Google Motion Photo.</p>
+  </div>
+
+</section>
+</main>
+
+<div id="cropModal" class="fixed inset-0 z-[55] hidden items-end sm:items-center justify-center bg-gray-900/70 sm:p-3">
+  <div class="w-full max-w-md max-h-full flex flex-col bg-white rounded-t-xl sm:rounded-xl">
+    <div class="flex items-center justify-between px-4 pt-3 pb-2"><h3 id="cmTitle" class="text-sm font-bold text-gray-900">Cắt ảnh tĩnh</h3><span id="cmZoomLabel" class="text-xs font-mono text-gray-500">1.00×</span></div>
+    <div class="px-4 pb-3 space-y-3 overflow-y-auto">
+      <div id="cmChipsRow" class="flex items-start justify-between gap-2">
+        <div id="cmChips" class="flex flex-wrap gap-1.5"></div>
+        <button id="cmSwap" class="btn-flat !py-1.5 !px-2.5 flex-none flex items-center gap-1.5" title="Xoay ngang/dọc"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>Xoay</button>
+      </div>
+      <p id="cmLockNote" class="hidden text-xs text-blue-700 bg-blue-50 rounded-lg px-3 py-2 leading-relaxed"></p>
+      <div id="cmStage" class="no-select">
+        <img id="cmImg" class="cmM hidden" draggable="false" alt="">
+        <video id="cmVid" class="cmM hidden" muted playsinline preload="auto"></video>
+        <div id="cmFrame"></div>
+      </div>
+      <p class="text-[11px] text-gray-400 leading-relaxed">Kéo để chọn vùng giữ lại, chụm 2 ngón hoặc lăn chuột để zoom. Chỉ phần sáng trong khung được giữ lại.</p>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-gray-400">Zoom</span>
+        <input type="range" id="cmZoom" min="1" max="8" step="0.01" value="1" class="flex-1 min-w-0">
+        <button id="cmFit" class="chip !py-1.5 !px-2.5">Vừa khung</button><button id="cmFill" class="chip !py-1.5 !px-2.5">Lấp đầy</button>
+      </div>
+    </div>
+    <div class="flex gap-2 px-4 py-3 bg-gray-50 rounded-b-xl">
+      <button id="cmPlay" class="btn-flat hidden bg-white">Dừng</button>
+      <button id="cmCancel" class="btn-flat flex-1 bg-white flex items-center justify-center gap-1.5"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>Hủy</button>
+      <button id="cmOk" class="btn-solid flex-1 flex items-center justify-center gap-1.5"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Xong</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="fixed bottom-5 right-5 left-5 sm:left-auto bg-gray-900 text-white px-4 py-2.5 rounded-xl text-xs font-medium translate-y-10 opacity-0 transition-all duration-300 z-[60] pointer-events-none">Message</div>
+
+<div id="progressModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-gray-900/50 p-4">
+  <div class="w-full max-w-sm bg-white rounded-xl p-5">
+    <div class="flex items-center justify-between mb-1"><h3 id="pmTitle" class="text-sm font-bold text-gray-900">Đang tạo Motion Photo</h3><span id="pmPercent" class="text-sm font-mono font-semibold text-blue-600">0%</span></div>
+    <p id="pmStatus" class="text-xs text-gray-500 mb-3">Đang chuẩn bị...</p>
+    <div class="h-2 bg-gray-100 rounded-full overflow-hidden"><div id="pmBar" class="h-full bg-blue-600 rounded-full" style="width:0%;transition:width .15s linear"></div></div>
+    <ul id="pmSteps" class="mt-4 space-y-2 text-xs">
+      <li data-step="0" class="flex items-center gap-2 text-gray-400"><span class="dot w-2 h-2 rounded-full bg-gray-300"></span>Xử lý khung hình và ghi video</li>
+      <li data-step="1" class="flex items-center gap-2 text-gray-400"><span class="dot w-2 h-2 rounded-full bg-gray-300"></span>Nhúng XMP Motion Photo vào JPEG</li>
+    </ul>
+    <p id="pmNote" class="hidden mt-3 text-[11px] leading-relaxed text-gray-500 bg-gray-100 rounded-lg p-2.5"></p>
+    <div class="flex gap-2 mt-5">
+      <button id="pmCancel" class="btn-flat flex-1">Hủy</button>
+      <button id="pmDownload" class="btn-flat flex-1 hidden">Tải lại</button>
+      <button id="pmClose" class="flex-1 hidden text-xs font-semibold rounded-[10px] py-2.5 bg-blue-600 text-white hover:bg-blue-700">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<footer id="siteFoot"><div class="in">
+  <div class="top">
+    <div>
+      <span class="brand"><span>LION MOTION</span></span>
+      <p class="d">Tạo Google Motion Photo từ ảnh và video ngay trên trình duyệt. Miễn phí, không cần cài ứng dụng, tệp không rời khỏi máy bạn.</p>
+    </div>
+    <div>
+      <p class="lbl">Theo dõi</p>
+      <div class="links">
+        <a href="https://www.instagram.com/kaiis.w" target="_blank" rel="noopener noreferrer">Instagram</a>
+        <a href="https://www.threads.com/@kaiis.w" target="_blank" rel="noopener noreferrer">Threads</a>
+        <a href="https://www.tiktok.com/@kaiis.z" target="_blank" rel="noopener noreferrer">TikTok</a>
+      </div>
+    </div>
+  </div>
+  <div class="bot"><span>&copy; 2026 Lion Motion</span><span>Chạy hoàn toàn trên trình duyệt &middot; Dành cho Android</span></div>
+</div></footer>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const ICON = { play: '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>', pause: '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></svg>' };
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const fmtTime = t => { t = Math.max(0, t); const m = Math.floor(t / 60); return m + ':' + (t - m * 60).toFixed(2).padStart(5, '0'); };
+
+function waitEvent(el, name, ms, check) {
+  return new Promise(res => {
+    if (check && check()) return res(true);
+    const done = ok => { clearTimeout(to); el.removeEventListener(name, on); res(ok); };
+    const on = () => done(true), to = setTimeout(() => done(false), ms);
+    el.addEventListener(name, on);
+  });
+}
+function seekAndWait(v, t) {
+  return new Promise(res => {
+    if (Math.abs(v.currentTime - t) < 0.001 && v.readyState >= 2) return res();
+    const done = () => { clearTimeout(to); v.removeEventListener('seeked', done); res(); };
+    const to = setTimeout(done, 2000);
+    v.addEventListener('seeked', done);
+    v.currentTime = t;
+  });
+}
+let toastTimer;
+function showToast(msg) {
+  const t = $('toast'); t.textContent = msg;
+  t.classList.remove('translate-y-10', 'opacity-0');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.add('translate-y-10', 'opacity-0'), 3200);
+}
+
+/* ============ State ============ */
+const MAX_LEN = 10, DEFAULT_LEN = 3, OPT_MIN = 1.5, MAX_ZOOM = 8;
+const ASPECTS = [
+  { id: 'original', label: 'Gốc' }, { id: '1:1', label: '1:1', r: 1 }, { id: '4:3', label: '4:3', r: 4 / 3 },
+  { id: '3:4', label: '3:4', r: 3 / 4 }, { id: '16:9', label: '16:9', r: 16 / 9 }, { id: '19.5:9', label: '19.5:9', r: 19.5 / 9 }
+];
+const state = {
+  mode: 'both', imageUrl: null, imgEl: null,
+  videoUrl: null, duration: 0, vw: 0, vh: 0, start: 0, end: 0, keyframeUrl: null, key: 0, keyCustom: false,
+  link: true,
+  vt: { s: 1, x: 0, y: 0 }, it: { s: 1, x: 0, y: 0 },   // zoom + pan riêng cho video (vt) và ảnh (it), tính theo phần của khung
+  aspect: 'original', swap: false, motionStyle: 'still', motionDur: 2,   // chế độ Chỉ ảnh: luôn đứng yên, không có tuỳ chọn
+  viewMode: 'live', holding: false, sticky: false, busy: false, abort: false,
+  lastBlob: null, lastName: '',
+  fast: true,
+  text: { value: '', color: '#ffffff', size: 0.06, bar: true, barOpacity: 0.6, x: 0.5, y: 0.5 }
+};
+const video = $('previewVideo'), previewImage = $('previewImage'), previewBox = $('previewBox');
+
+function pickMp4() {
+  if (typeof MediaRecorder === 'undefined' || !MediaRecorder.isTypeSupported) return '';
+  return ['video/mp4;codecs=avc1.42E01E', 'video/mp4;codecs=avc1', 'video/mp4;codecs=h264', 'video/mp4'].find(t => MediaRecorder.isTypeSupported(t)) || '';
+}
+const hasWC = typeof VideoEncoder !== 'undefined' && typeof VideoFrame !== 'undefined';
+const FPS = 30;
+if (!hasWC && (!pickMp4() || !HTMLCanvasElement.prototype.captureStream)) $('mp4Warn').classList.remove('hidden');
+
+/* ============ Aspect ============ */
+function nativeRatio() {
+  if (state.mode === 'video' && state.vw) return state.vw / state.vh;
+  if (state.imgEl) return state.imgEl.naturalWidth / state.imgEl.naturalHeight;   // both/image: khung theo ảnh tĩnh
+  if (state.vw) return state.vw / state.vh;
+  return 4 / 3;
+}
+function getRatio() {
+  const a = ASPECTS.find(x => x.id === state.aspect);
+  if (a.id === 'original') return nativeRatio();
+  return state.swap ? 1 / a.r : a.r;
+}
+function aspectLabel() {
+  const a = ASPECTS.find(x => x.id === state.aspect);
+  if (a.id === 'original') return 'Gốc';
+  return state.swap && a.id !== '1:1' ? a.id.split(':').reverse().join(':') : a.id;
+}
+function layoutPreview() {
+  const st = $('previewStage'), sw = st.clientWidth, sh = st.clientHeight;
+  if (!sw || !sh) return;
+  const r = getRatio();
+  let w = sw, h = sw / r;
+  if (h > sh) { h = sh; w = sh * r; }
+  previewBox.style.width = w + 'px'; previewBox.style.height = h + 'px';
+}
+if (window.ResizeObserver) new ResizeObserver(layoutPreview).observe($('previewStage'));
+window.addEventListener('resize', layoutPreview);
+
+/* ============ Khung hình: zoom / pan (video và ảnh có transform riêng) ============ */
+// Lớp đang hiển thị quyết định lớp được chỉnh: tab Cắt = video, tab Live = ảnh (chế độ Chỉ video thì luôn là video).
+const target = () => (state.mode === 'both' && state.link && state.imgEl && state.vw) ? 'image' : state.mode === 'video' ? 'video' : state.mode === 'image' ? 'image' : (state.viewMode === 'trim' && hasVideo() ? 'video' : 'image');
+const curT = () => target() === 'video' ? state.vt : state.it;
+const imgDims = () => state.imgEl ? { w: state.imgEl.naturalWidth, h: state.imgEl.naturalHeight } : { w: 0, h: 0 };
+const curDims = () => target() === 'video' ? { w: state.vw, h: state.vh } : imgDims();
+function zminFor(d) {
+  if (!d.w) return 1;
+  const a = getRatio() / d.w, b = 1 / d.h;
+  return Math.min(1, Math.min(a, b) / Math.max(a, b));        // mức thu nhỏ để thấy trọn nội dung
+}
+const zmin = () => zminFor(curDims());
+function clampT(t, d) {
+  if (!d.w) { t.s = 1; t.x = t.y = 0; return; }
+  t.s = clamp(t.s, zminFor(d), MAX_ZOOM);
+  const r = getRatio(), sc0 = Math.max(r / d.w, 1 / d.h), dw = d.w * sc0 * t.s, dh = d.h * sc0 * t.s;
+  const mx = Math.abs(dw - r) / 2 / r, my = Math.abs(dh - 1) / 2;   // khung = r x 1, pan tính theo phần của khung
+  t.x = clamp(t.x, -mx, mx); t.y = clamp(t.y, -my, my);
+}
+const linkedOn = () => state.mode === 'both' && state.link && !!state.imgEl && !!state.vw;
+function deriveVT() {
+  // Video phủ kín đúng vùng mà ảnh đang hiển thị trong khung -> ảnh và video luôn cùng một bố cục
+  const r = getRatio(), iw = state.imgEl.naturalWidth, ih = state.imgEl.naturalHeight, vw = state.vw, vh = state.vh;
+  const si = Math.max(r / iw, 1 / ih) * state.it.s, dw = iw * si, dh = ih * si;
+  const sv = Math.max(dw / vw, dh / vh);
+  return { s: sv / Math.max(r / vw, 1 / vh), x: state.it.x, y: state.it.y };
+}
+function clampAll() {
+  clampT(state.it, imgDims());
+  if (linkedOn()) state.vt = deriveVT(); else clampT(state.vt, { w: state.vw, h: state.vh });
+}
+// Đặt media vào khung theo CÙNG công thức với popup cắt và drawCover khi xuất:
+// khung = r x 1, media phủ kín (cover) x zoom s, tâm lệch (x, y) tính theo phần của khung.
+// Dùng left/top/width/height theo % của khung nên không bị object-cover cắt mất nội dung trước khi áp vị trí.
+function place(el, d, t) {
+  if (!d.w || !d.h) return;
+  const r = getRatio(), k = Math.max(r / d.w, 1 / d.h) * t.s;
+  const wf = d.w * k / r, hf = d.h * k;
+  el.style.width = (wf * 100) + '%'; el.style.height = (hf * 100) + '%';
+  el.style.left = (50 + t.x * 100 - wf * 50) + '%'; el.style.top = (50 + t.y * 100 - hf * 50) + '%';
+}
+const stillDims = () => state.mode === 'video' ? { w: state.vw, h: state.vh } : imgDims();
+function applyTransforms() {
+  place(video, { w: state.vw, h: state.vh }, state.vt);
+  if (!motionRAF) place(previewImage, stillDims(), state.mode === 'video' ? state.vt : state.it);
+}
+function setT(s, x, y) { const t = curT(); t.s = s; t.x = x; t.y = y; clampAll(); applyTransforms(); }
+
+const canFrame = () => !state.busy && !state.holding && (target() === 'video' ? hasVideo() : !!state.imgEl);
+const pts = new Map();
+let gest = { moved: 0, dist: 0, cx: 0, cy: 0 };
+function gestRead() {
+  const p = [...pts.values()];
+  if (p.length === 1) return { cx: p[0].x, cy: p[0].y, dist: 0 };
+  if (p.length >= 2) return { cx: (p[0].x + p[1].x) / 2, cy: (p[0].y + p[1].y) / 2, dist: Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) };
+  return null;
+}
+function boxInfo() { const r = previewBox.getBoundingClientRect(); return { w: r.width, h: r.height, cx: r.left + r.width / 2, cy: r.top + r.height / 2 }; }
+// Zoom k lần quanh điểm (fx, fy) (phần của khung, tính từ tâm khung) rồi dịch thêm (dx, dy): điểm dưới ngón tay đứng yên khi zoom
+function zoomPan(k, fx, fy, dx, dy) {
+  const t = curT();
+  t.x = fx + k * (t.x - fx) + dx; t.y = fy + k * (t.y - fy) + dy; t.s *= k;
+  clampAll(); applyTransforms();
+}
+previewBox.addEventListener('pointerdown', e => {
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  if (txtDown(e)) return;
+  if (!canFrame()) return;
+  pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  try { previewBox.setPointerCapture(e.pointerId); } catch (_) {}
+  if (pts.size === 1) gest.moved = 0;
+  previewBox.classList.add('gesturing');
+  const g = gestRead(); gest.cx = g.cx; gest.cy = g.cy; gest.dist = g.dist;
+});
+previewBox.addEventListener('pointermove', e => {
+  if (txtMove(e)) return;
+  if (!pts.has(e.pointerId)) return;
+  pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  const g = gestRead(), b = boxInfo(), t = curT();
+  const dx = g.cx - gest.cx, dy = g.cy - gest.cy;
+  gest.moved += Math.abs(dx) + Math.abs(dy);
+  let k = 1;
+  if (pts.size >= 2 && gest.dist > 0 && g.dist > 0) { k = clamp(t.s * g.dist / gest.dist, zmin(), MAX_ZOOM) / t.s; gest.moved += 10; }
+  zoomPan(k, (gest.cx - b.cx) / b.w, (gest.cy - b.cy) / b.h, dx / b.w, dy / b.h);
+  gest.cx = g.cx; gest.cy = g.cy; gest.dist = g.dist;
+});
+const upPointer = e => {
+  if (txtUp(e)) return;
+  pts.delete(e.pointerId);
+  const g = gestRead(); if (g) { gest.cx = g.cx; gest.cy = g.cy; gest.dist = g.dist; }
+  if (!pts.size) previewBox.classList.remove('gesturing');
+};
+['pointerup', 'pointercancel'].forEach(n => previewBox.addEventListener(n, upPointer));
+previewBox.addEventListener('wheel', e => {
+  if (!canFrame()) return;
+  e.preventDefault();
+  const b = boxInfo(), t = curT(), ns = clamp(t.s * Math.exp(-e.deltaY * 0.0015), zmin(), MAX_ZOOM);
+  zoomPan(ns / t.s, (e.clientX - b.cx) / b.w, (e.clientY - b.cy) / b.h, 0, 0);
+}, { passive: false });
+
+// Đổi tỷ lệ khung: media tự co giãn về đúng tỷ lệ gốc (hiện trọn nội dung) và về giữa khung; giới hạn kéo được tính lại theo khung mới
+let tweenTimer = null;
+function tween() {
+  const els = [video, previewImage, previewBox];
+  els.forEach(el => el.classList.add('tween'));
+  clearTimeout(tweenTimer);
+  tweenTimer = setTimeout(() => els.forEach(el => el.classList.remove('tween')), 340);
+}
+function resetFraming() {
+  const fit = d => ({ s: zminFor(d), x: 0, y: 0 });
+  state.it = fit(imgDims());
+  state.vt = fit({ w: state.vw, h: state.vh });
+}
+previewBox.addEventListener('contextmenu', e => e.preventDefault());
+previewBox.addEventListener('click', () => {
+  if (state.viewMode === 'trim' && hasVideo() && !state.busy && gest.moved < 8) { if (video.paused) startSegmentLoop(true); else stopSegmentLoop(); }
+});
+
+/* ============ Mode ============ */
+const MODE_HINTS = {
+  both: 'Tải ảnh trước: popup hiện ra để chọn tỷ lệ và tự cắt. Sau đó tải video: khung tự theo tỷ lệ của ảnh để bạn căn video.',
+  image: 'Chỉ cần một ảnh. Video được tạo từ chính ảnh đó, giữ nguyên bức ảnh (đứng yên).',
+  video: 'Chỉ cần một video. Khung hình đầu đoạn cắt làm ảnh tĩnh.'
+};
+document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+async function setMode(m) {
+  if (state.busy || m === state.mode) return;
+  stopSegmentLoop(); stopHold();
+  clearImage(); clearVideo();            // đổi tab: xoá sạch tệp, khung và cài đặt để tab này không dính nội dung của tab khác
+  Object.assign(state, { link: true, aspect: 'original', swap: false, viewMode: 'live', lastBlob: null, lastName: '' });
+  state.mode = m; state.vt = { s: 1, x: 0, y: 0 }; state.it = { s: 1, x: 0, y: 0 };
+  document.querySelectorAll('#modeSeg button').forEach(x => x.classList.toggle('active', x.dataset.mode === m));
+  $('modeHint').textContent = MODE_HINTS[m];
+  syncUI();
+}
+$('modeHint').textContent = MODE_HINTS.both;
+
+/* ============ Upload ============ */
+function renderDropIdle(el, kind) {
+  const icon = kind === 'image' ? '<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>' : '<path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/>';
+  el.innerHTML = `<svg class="w-8 h-8 text-gray-400 mx-auto group-hover:text-blue-500 transition" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">${icon}</svg><p class="text-xs text-gray-600 font-medium">Nhấn để chọn hoặc kéo thả ${kind === 'image' ? 'ảnh' : 'video'} vào đây</p>`;
+}
+function renderDropLoaded(el, file, extra) {
+  el.innerHTML = `<div class="text-blue-600 font-semibold text-xs truncate max-w-[220px] mx-auto"></div><div class="text-[10px] text-gray-400">${(file.size / 1048576).toFixed(2)} MB${extra || ''}</div>`;
+  el.firstElementChild.textContent = file.name;
+}
+renderDropIdle($('imageInfo'), 'image'); renderDropIdle($('videoInfo'), 'video');
+
+function setupDropZone(zone, input, cb) {
+  zone.addEventListener('click', () => input.click());
+  ['dragenter', 'dragover'].forEach(n => zone.addEventListener(n, e => { e.preventDefault(); zone.classList.add('border-blue-500', 'bg-blue-50/50'); }));
+  ['dragleave', 'drop'].forEach(n => zone.addEventListener(n, e => { e.preventDefault(); zone.classList.remove('border-blue-500', 'bg-blue-50/50'); }));
+  zone.addEventListener('drop', e => { if (e.dataTransfer.files.length) cb(e.dataTransfer.files[0]); });
+  input.addEventListener('change', e => { if (e.target.files.length) cb(e.target.files[0]); input.value = ''; });
+}
+
+async function handleImageSelected(file) {
+  if (state.busy) return;
+  if (!file.type.startsWith('image/') && !/\.(jpe?g|png|heic|heif|webp)$/i.test(file.name)) return showToast('Vui lòng chọn đúng định dạng tệp ảnh!');
+  const url = URL.createObjectURL(file), img = new Image();
+  img.src = url;
+  try { await img.decode(); } catch (e) { URL.revokeObjectURL(url); return showToast('Không đọc được ảnh (HEIC chỉ mở được trên Safari). Hãy thử JPG/PNG.'); }
+  if (state.imageUrl) URL.revokeObjectURL(state.imageUrl);
+  state.imageUrl = url; state.imgEl = img; state.it = { s: 1, x: 0, y: 0 };
+  renderDropLoaded($('imageInfo'), file, ` · ${img.naturalWidth}×${img.naturalHeight}`);
+  $('btnClearImage').classList.remove('hidden');
+  syncUI();
+  openCrop('image');          // vừa nhập ảnh: hiện popup chọn tỷ lệ và tự cắt
+}
+function clearImage() {
+  if (state.imageUrl) URL.revokeObjectURL(state.imageUrl);
+  state.imageUrl = state.imgEl = null; state.it = { s: 1, x: 0, y: 0 };
+  renderDropIdle($('imageInfo'), 'image'); $('btnClearImage').classList.add('hidden'); syncUI();
+}
+$('btnClearImage').addEventListener('click', e => { e.stopPropagation(); if (!state.busy) clearImage(); });
+
+async function handleVideoSelected(file) {
+  if (state.busy) return;
+  if (!file.type.startsWith('video/') && !/\.(mp4|mov|m4v|webm)$/i.test(file.name)) return showToast('Vui lòng chọn đúng định dạng tệp video!');
+  stopSegmentLoop(); stopHold();
+  const url = URL.createObjectURL(file);
+  video.src = url; video.load();
+  const ok = await waitEvent(video, 'loadedmetadata', 10000, () => video.readyState >= 1);
+  if (!ok || !isFinite(video.duration) || !video.videoWidth) {
+    URL.revokeObjectURL(url); video.removeAttribute('src');
+    if (state.videoUrl) video.src = state.videoUrl;
+    return showToast('Không đọc được video này.');
+  }
+  await waitEvent(video, 'loadeddata', 10000, () => video.readyState >= 2);
+  if (state.videoUrl) URL.revokeObjectURL(state.videoUrl);
+  state.videoUrl = url; state.duration = video.duration;
+  state.vw = video.videoWidth; state.vh = video.videoHeight;
+  state.start = 0; state.end = Math.min(DEFAULT_LEN, state.duration); state.key = 0; state.keyCustom = false;
+  state.vt = { s: 1, x: 0, y: 0 };
+  renderDropLoaded($('videoInfo'), file, ` · ${state.vw}×${state.vh} · ${state.duration.toFixed(1)}s`);
+  $('btnClearVideo').classList.remove('hidden');
+  if (state.mode === 'video') await refreshKeyframe();
+  state.viewMode = 'trim';
+  syncUI(); updateTrimUI();
+  requestAnimationFrame(() => buildThumbs(url));
+  startSegmentLoop();
+  if (state.mode === 'video' || (state.mode === 'both' && state.imgEl)) openCrop('video');   // khung theo đúng tỷ lệ ảnh
+}
+function clearVideo() {
+  stopSegmentLoop(); stopHold();
+  if (state.videoUrl) URL.revokeObjectURL(state.videoUrl);
+  video.removeAttribute('src'); video.load();
+  state.videoUrl = state.keyframeUrl = null;
+  state.duration = state.vw = state.vh = state.start = state.end = state.key = 0; state.keyCustom = false;
+  state.vt = { s: 1, x: 0, y: 0 };
+  thumbToken++; $('thumbStrip').innerHTML = '';
+  renderDropIdle($('videoInfo'), 'video'); $('btnClearVideo').classList.add('hidden'); syncUI();
+}
+$('btnClearVideo').addEventListener('click', e => { e.stopPropagation(); if (!state.busy) clearVideo(); });
+setupDropZone($('imageDropArea'), $('imageInput'), handleImageSelected);
+setupDropZone($('videoDropArea'), $('videoInput'), handleVideoSelected);
+
+/* ============ Motion (ảnh -> video) ============ */
+function motionAt(style, p) {
+  const e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+  switch (style) {
+    case 'zoomin': return { s: 1 + 0.14 * e, x: 0, y: 0 };
+    case 'zoomout': return { s: 1.14 - 0.14 * e, x: 0, y: 0 };
+    case 'panright': return { s: 1.12, x: (e - 0.5) * 0.08, y: 0 };
+    case 'panleft': return { s: 1.12, x: (0.5 - e) * 0.08, y: 0 };
+    case 'breathe': return { s: 1 + 0.05 * (1 - Math.cos(2 * Math.PI * p)) / 2, x: 0, y: 0 };
+    default: return { s: 1, x: 0, y: 0 };
+  }
+}
+let motionRAF = null;
+function imgTransform(p) {            // transform ảnh = chỉnh tay (it) + chuyển động sinh video; dùng chung cho preview và xuất
+  const m = state.mode === 'image' ? motionAt(state.motionStyle, p) : { s: 1, x: 0, y: 0 };
+  return { s: state.it.s * m.s, x: state.it.x + m.x, y: state.it.y + m.y };
+}
+function startMotionPreview() {
+  const t0 = performance.now();
+  const tick = () => {
+    const p = (((performance.now() - t0) / 1000) % state.motionDur) / state.motionDur;
+    place(previewImage, imgDims(), imgTransform(p));
+    motionRAF = requestAnimationFrame(tick);
+  };
+  motionRAF = requestAnimationFrame(tick);
+}
+function stopMotionPreview() { cancelAnimationFrame(motionRAF); motionRAF = null; applyTransforms(); }
+
+/* ============ Phát đúng đoạn đã cắt ============ */
+let loopRAF = null, fadeTimer = null, fadeBusy = false, fadeLoop = false;
+// ===== HIỆU ỨNG MỜ: sửa số ở đây, áp dụng cho cả xem trước lẫn khi xuất =====
+// tail = số giây video hòa tan sang ảnh tĩnh ở cuối đoạn · head = số giây ảnh tan ra thành video ở đầu đoạn · hold = số giây giữ ảnh (chỉ khi xem trước)
+const FX = { tail: 0.9, head: 0.5, hold: 1.0 };
+const FADE_IN = FX.tail, HOLD_MS = FX.hold * 1000, FADE_OUT_MS = FX.head * 1000;
+const setFade = (op, ms) => { previewImage.style.transitionDuration = ms + 'ms'; previewImage.style.opacity = op; };
+function updatePlayhead() {
+  if (!state.duration) return;
+  $('playhead').style.left = pos(clamp(video.currentTime / state.duration, 0, 1));
+  const km = $('keyMark'); km.classList.toggle('hidden', !keyMode());
+  if (keyMode()) km.style.left = pos(clamp(state.key / state.duration, 0, 1));
+}
+function loopGuard() {
+  if (fadeBusy) return;
+  const t = video.currentTime, over = t >= state.end - 0.04 || t < state.start - 0.25 || video.ended;
+  if (fadeLoop) {
+    // Live: gần hết đoạn thì video hòa tan dần sang ảnh tĩnh (video vẫn chạy), giữ ảnh, rồi mờ ngược ra video phát lại từ startTime
+    if (!over && t >= state.end - FADE_IN && previewImage.style.opacity !== '1') setFade(1, FADE_IN * 1000);
+    if (over) {
+      fadeBusy = true; video.pause();
+      if (previewImage.style.opacity !== '1') setFade(1, 250);
+      fadeTimer = setTimeout(async () => {
+        if (!loopRAF) return;
+        await seekAndWait(video, state.start);
+        if (!loopRAF) return;
+        video.play().catch(() => {});
+        setFade(0, FADE_OUT_MS);
+        fadeBusy = false;
+      }, HOLD_MS);
+    }
+  } else if (over) {                     // Tab Cắt: lặp liền mạch trong [startTime, endTime]
+    video.currentTime = state.start;
+    if (video.paused) video.play().catch(() => {});
+  }
+}
+function startSegmentLoop(fromCurrent, fade) {
+  stopSegmentLoop();
+  if (!state.videoUrl) return;
+  fadeLoop = !!fade; video.loop = false;
+  if (!fromCurrent || video.currentTime < state.start || video.currentTime >= state.end - 0.04) video.currentTime = state.start;
+  video.play().catch(() => {});
+  const tick = () => { loopGuard(); updatePlayhead(); loopRAF = requestAnimationFrame(tick); };
+  loopRAF = requestAnimationFrame(tick);
+}
+function stopSegmentLoop() {
+  cancelAnimationFrame(loopRAF); loopRAF = null;
+  clearTimeout(fadeTimer); fadeTimer = null; fadeBusy = false; fadeLoop = false; previewImage.style.transitionDuration = '';
+  if (video.src) video.pause();
+}
+video.addEventListener('timeupdate', () => { if (loopRAF) loopGuard(); });
+video.addEventListener('ended', () => { if (loopRAF) loopGuard(); });
+
+let seekBusy = false, seekNext = null, seekTimer = null;
+function seekTo(t) { seekNext = t; if (!seekBusy) pumpSeek(); }
+function pumpSeek() {
+  if (seekNext == null) { seekBusy = false; return; }
+  const t = seekNext; seekNext = null;
+  if (Math.abs(video.currentTime - t) < 0.01) { seekBusy = false; updatePlayhead(); return; }
+  seekBusy = true; clearTimeout(seekTimer); seekTimer = setTimeout(pumpSeek, 250);
+  video.currentTime = t;
+}
+video.addEventListener('seeked', () => { clearTimeout(seekTimer); if (seekNext != null) pumpSeek(); else seekBusy = false; updatePlayhead(); });
+
+async function refreshKeyframe() {
+  if (!state.videoUrl) return;
+  video.pause();
+  await seekAndWait(video, state.key);
+  const k = Math.min(1, 1280 / Math.max(state.vw, state.vh)), c = document.createElement('canvas');
+  c.width = Math.round(state.vw * k); c.height = Math.round(state.vh * k);
+  c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+  state.keyframeUrl = c.toDataURL('image/jpeg', 0.85);
+}
+
+/* ============ Trimmer: dải film + hộp chọn đoạn + chọn ảnh chính ============ */
+const PAD = 14, HIT = 20;                       // PAD: bề rộng tay nắm hai bên; HIT: bán kính chạm vào tay nắm
+const film = $('film'), filmTrack = $('filmTrack');
+const keyMode = () => state.mode === 'video';   // chỉ chế độ "Chỉ video" lấy ảnh chính từ chính video
+const trimOk = () => state.duration && !state.busy;
+const trimLimits = () => ({ MIN: Math.min(0.5, state.duration), MAXL: Math.min(MAX_LEN, state.duration) });
+const pos = f => `calc(${f} * (100% - ${2 * PAD}px) + ${PAD}px)`;
+const geo = () => { const r = filmTrack.getBoundingClientRect(); return { left: r.left, top: r.top, w: r.width, inner: Math.max(1, r.width - 2 * PAD) }; };
+const t2x = (t, g) => PAD + (t / state.duration) * g.inner;
+const x2t = (x, g) => clamp((x - PAD) / g.inner, 0, 1) * state.duration;
+
+function clampKey() {
+  if (!state.duration) return;
+  if (!state.keyCustom) state.key = state.start;                       // chưa tự chọn: ảnh chính = khung đầu đoạn
+  state.key = clamp(state.key, state.start, Math.max(state.start, state.end - 0.04));
+}
+function updateTrimUI() {
+  const D = state.duration; if (!D) return;
+  clampKey();
+  const fs = state.start / D, fe = state.end / D, len = state.end - state.start;
+  $('selWin').style.left = pos(fs); $('selWin').style.width = `calc(${fe - fs} * (100% - ${2 * PAD}px))`;
+  $('dimL').style.left = PAD + 'px'; $('dimL').style.width = `calc(${fs} * (100% - ${2 * PAD}px))`;
+  $('dimR').style.left = pos(fe);
+  $('selTabText').textContent = len.toFixed(1) + 's';
+  const g = geo(), tab = $('selTab');
+  if (g.w) { const tw = tab.offsetWidth, cx = t2x((state.start + state.end) / 2, g); tab.style.left = clamp(cx - tw / 2, 0, Math.max(0, g.w - tw)) + 'px'; }
+  $('tStart').textContent = fmtTime(state.start); $('tEnd').textContent = fmtTime(state.end); $('tLen').textContent = len.toFixed(2) + 's';
+  $('tKey').textContent = fmtTime(state.key);
+  $('trimGuideText').textContent = keyMode()
+    ? 'Vuốt hoặc kéo để chọn khoảnh khắc làm ảnh chính'
+    : 'Vuốt trong hộp để xem từng khung hình (ảnh chính lấy từ ảnh tĩnh bạn đã tải)';
+  const good = len >= OPT_MIN - 0.01 && len <= MAX_LEN + 0.01, hint = $('trimHint');
+  hint.textContent = good ? 'Độ dài tối ưu' : (len < OPT_MIN ? 'Nên từ 1.5 giây trở lên' : 'Tối đa 10 giây');
+  hint.className = 'text-[11px] font-semibold px-2 py-0.5 rounded-full ' + (good ? 'text-emerald-800 bg-emerald-100' : 'text-amber-800 bg-amber-100');
+  updatePlayhead();
+}
+
+/* ---- Dải thumbnail liên tiếp ---- */
+let thumbToken = 0, lastFilmW = 0, rzTimer = null;
+async function buildThumbs(url) {
+  const token = ++thumbToken, strip = $('thumbStrip'); strip.innerHTML = '';
+  const inner = strip.clientWidth; if (!inner || !state.vw) return;
+  lastFilmW = film.clientWidth;
+  const h = filmTrack.clientHeight || 60, cellW = clamp(h * state.vw / state.vh, 34, 76);
+  const N = clamp(Math.round(inner / cellW), 4, 24), cells = [];
+  for (let i = 0; i < N; i++) { const d = document.createElement('div'); d.className = 'th'; strip.appendChild(d); cells.push(d); }
+  const tv = document.createElement('video');
+  tv.muted = true; tv.playsInline = true; tv.preload = 'auto'; tv.src = url;
+  try {
+    if (!(await waitEvent(tv, 'loadeddata', 8000, () => tv.readyState >= 2)) || token !== thumbToken) return;
+    const ch = 80, cw = Math.max(24, Math.round(ch * (inner / N) / h)), c = document.createElement('canvas');
+    c.width = cw; c.height = ch;
+    const cx = c.getContext('2d');
+    for (let i = 0; i < N; i++) {
+      if (token !== thumbToken) return;
+      await seekAndWait(tv, Math.max(0, Math.min(state.duration - 0.05, (i + 0.5) / N * state.duration)));
+      if (token !== thumbToken) return;
+      drawCover(cx, tv, tv.videoWidth, tv.videoHeight, cw, ch, null);
+      const im = new Image(); im.src = c.toDataURL('image/jpeg', 0.7);
+      cells[i].appendChild(im); cells[i].classList.add('ok');
+    }
+  } catch (e) { /* bỏ qua thumbnail lỗi */ }
+  finally { tv.removeAttribute('src'); tv.load(); }
+}
+if (window.ResizeObserver) new ResizeObserver(() => {
+  if (!state.duration) return;
+  updateTrimUI();
+  const w = film.clientWidth;
+  if (w && state.videoUrl && Math.abs(w - lastFilmW) > 24) {
+    clearTimeout(rzTimer); rzTimer = setTimeout(() => { if (state.videoUrl) buildThumbs(state.videoUrl); }, 300);
+  }
+}).observe(film);
+
+/* ---- Kéo thả trên dải film ---- */
+// Vùng chạm: nhãn số giây phía trên = trượt đoạn; hai tay nắm = đổi độ dài; trong hộp = chọn khung / ảnh chính; ngoài hộp = nhảy tới
+let drag = null;
+function hitZone(e) {
+  const g = geo(), x = e.clientX - g.left;
+  if (e.clientY < g.top) return { z: 'move', g };
+  const xl = t2x(state.start, g), xr = t2x(state.end, g);
+  const dl = Math.abs(x - (xl - PAD / 2)), dr = Math.abs(x - (xr + PAD / 2));
+  if (Math.min(dl, dr) <= HIT) return { z: dl <= dr ? 'l' : 'r', g };
+  return { z: (x > xl && x < xr) ? 'key' : 'jump', g };
+}
+function applyDrag(e) {
+  const d = drag, { MIN, MAXL } = trimLimits(), D = state.duration;
+  const dt = (e.clientX - d.x0) / d.g.inner * D;
+  let seekT;
+  if (d.z === 'move') {
+    const len = d.e0 - d.s0, ns = clamp(d.s0 + dt, 0, D - len);
+    state.start = ns; state.end = ns + len; seekT = state.start;
+  } else if (d.z === 'l') {
+    state.start = clamp(d.s0 + dt, Math.max(0, d.e0 - MAXL), d.e0 - MIN); state.end = d.e0; seekT = state.start;
+  } else if (d.z === 'r') {
+    state.start = d.s0; state.end = clamp(d.e0 + dt, d.s0 + MIN, Math.min(D, d.s0 + MAXL)); seekT = Math.max(state.start, state.end - 0.04);
+  } else {
+    seekT = clamp(x2t(e.clientX - d.g.left, d.g), state.start, Math.max(state.start, state.end - 0.04));
+    if (keyMode()) { state.key = seekT; state.keyCustom = true; }
+  }
+  updateTrimUI(); seekTo(seekT);
+}
+film.addEventListener('pointerdown', e => {
+  if (!trimOk() || drag) return;
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  e.preventDefault();
+  const { z, g } = hitZone(e);
+  if (state.holding) stopHold();
+  if (state.viewMode === 'live') { state.viewMode = 'trim'; syncUI(); }
+  stopSegmentLoop();
+  try { film.setPointerCapture(e.pointerId); } catch (_) {}
+  film.classList.add('dragging');
+  drag = { z, id: e.pointerId, x0: e.clientX, s0: state.start, e0: state.end, g };
+  if (z === 'jump') {                       // chạm ngoài hộp: đưa hộp tới đó rồi tiếp tục kéo
+    const len = state.end - state.start, c = x2t(e.clientX - g.left, g), ns = clamp(c - len / 2, 0, state.duration - len);
+    state.start = ns; state.end = ns + len; drag.z = 'move'; drag.s0 = state.start; drag.e0 = state.end;
+  }
+  applyDrag(e);
+});
+film.addEventListener('pointermove', e => {
+  if (drag) { if (e.pointerId === drag.id) applyDrag(e); return; }
+  if (e.pointerType !== 'mouse' || !state.duration) return;
+  const z = hitZone(e).z;
+  film.style.cursor = (z === 'l' || z === 'r') ? 'ew-resize' : z === 'move' ? 'grab' : 'pointer';
+});
+async function endDrag(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  const z = drag.z; drag = null; film.classList.remove('dragging');
+  seekNext = null;
+  for (let i = 0; i < 30 && seekBusy; i++) await sleep(20);
+  if (keyMode()) { await refreshKeyframe(); syncUI(); }
+  if (drag) return;                          // người dùng đã chạm tiếp trong lúc chờ
+  if (z === 'key') updatePlayhead(); else startSegmentLoop();
+}
+['pointerup', 'pointercancel'].forEach(n => film.addEventListener(n, endDrag));
+
+async function nudgeKey(delta) {
+  if (!trimOk() || !keyMode() || drag) return;
+  if (state.holding) stopHold();
+  if (state.viewMode === 'live') { state.viewMode = 'trim'; syncUI(); }
+  stopSegmentLoop();
+  state.keyCustom = true;
+  state.key = clamp(state.key + delta, state.start, Math.max(state.start, state.end - 0.04));
+  updateTrimUI(); await refreshKeyframe(); syncUI();
+}
+$('keyPrev').addEventListener('click', () => nudgeKey(-0.1));
+$('keyNext').addEventListener('click', () => nudgeKey(0.1));
+
+/* ============ View / Xem trước Live ============ */
+const hasVideo = () => state.mode !== 'image' && !!state.videoUrl;
+const stillSrc = () => state.mode === 'video' ? state.keyframeUrl : state.imageUrl;
+function isReady() {
+  if (state.mode === 'both') return !!(state.imgEl && state.videoUrl);
+  if (state.mode === 'image') return !!state.imgEl;
+  return !!state.videoUrl && state.duration > 0;
+}
+function setView(v, silent) {
+  state.viewMode = v; stopHold(); syncUI();
+  if (silent) return;
+  if (v === 'trim' && hasVideo()) startSegmentLoop(true); else stopSegmentLoop();
+}
+document.querySelectorAll('#viewToggle button').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+
+function startHold() {
+  if (state.holding || state.busy) return;
+  if (hasVideo() && stillSrc()) {
+    state.holding = true; setFade(0, 450);
+    startSegmentLoop(false, true);        // luôn bắt đầu từ startTime, dừng ở endTime, mờ sang ảnh tĩnh rồi lặp
+  } else if (state.mode === 'image' && state.imgEl) {
+    state.holding = true; startMotionPreview();
+  }
+  updateLiveBtn();
+}
+function stopHold() {
+  if (!state.holding) return;
+  state.holding = false;
+  if (hasVideo()) stopSegmentLoop(); else stopMotionPreview();
+  previewImage.style.opacity = (state.viewMode === 'trim' && hasVideo()) ? '0' : '1';
+  applyTransforms(); updateLiveBtn();
+}
+function updateLiveBtn() {
+  $('btnLive').classList.toggle('on', state.holding);
+  $('btnLiveText').textContent = state.holding ? 'Dừng xem trước' : 'Xem trước Live';
+  $('btnLiveIcon').innerHTML = state.holding ? ICON.pause : ICON.play;
+  $('btnLive').disabled = !isReady() || state.busy;
+  previewBox.classList.toggle('framing', canFrame());
+}
+$('btnLive').addEventListener('click', () => {
+  if (state.holding) return stopHold();
+  if (hasVideo() && state.viewMode !== 'live') { stopSegmentLoop(); state.viewMode = 'live'; syncUI(); }
+  startHold();
+});
+
+/* ============ Sync UI ============ */
+function syncUI() {
+  const m = state.mode, hv = hasVideo(), src = stillSrc(), hi = !!src;
+  const showImgDrop = m !== 'video' && !state.imgEl, showVidDrop = m !== 'image' && !state.videoUrl;   // đã chọn tệp nào thì ô đó tự ẩn
+  $('imageCard').classList.toggle('hidden', !showImgDrop);
+  $('videoCard').classList.toggle('hidden', !showVidDrop);
+  $('dropWrap').classList.toggle('hidden', !(showImgDrop || showVidDrop));
+  $('modeHint').classList.toggle('hidden', !(showImgDrop || showVidDrop));
+  $('btnReplaceImg').classList.toggle('hidden', !state.imgEl);
+  $('btnReplaceVid').classList.toggle('hidden', !hv);
+  $('trimCard').classList.toggle('hidden', !hv);
+  $('keyRow').classList.toggle('hidden', !(hv && m === 'video'));
+  $('btnCropImg').classList.toggle('hidden', !state.imgEl);
+  $('btnCropVid').classList.toggle('hidden', !hv);
+  if (hv) updateTrimUI();
+  if (!hv) state.viewMode = 'live'; else if (!hi) state.viewMode = 'trim';
+
+  const vt = $('viewToggle');
+  vt.classList.toggle('hidden', !(hv && hi));
+  vt.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.view === state.viewMode));
+
+  if (hi) {
+    if (previewImage._src !== src) { previewImage.src = src; previewImage._src = src; }
+    previewImage.classList.remove('hidden');
+  } else { previewImage.classList.add('hidden'); previewImage.removeAttribute('src'); previewImage._src = null; }
+  video.classList.toggle('hidden', !hv);
+  if (!state.holding) previewImage.style.opacity = (state.viewMode === 'trim' && hv) ? '0' : '1';
+
+  $('previewPanel').classList.toggle('hidden', !(hv || hi));
+  $('textCard').classList.toggle('hidden', !(hv || hi));
+  layoutPreview(); clampAll(); applyTransforms(); renderTextOv();
+  previewBox.classList.toggle('framing', canFrame());
+
+  $('previewPlaceholder').classList.toggle('hidden', hv || hi);
+  $('placeholderText').textContent = m === 'both' ? 'Tải lên ảnh và video để bắt đầu' : m === 'image' ? 'Tải lên một ảnh để tạo Motion Photo' : 'Tải lên một video để cắt đoạn Motion Photo';
+  $('liveBadge').classList.toggle('hidden', !(state.viewMode === 'live' && hi && (hv || m === 'image')));
+  $('previewHint').textContent = state.holding ? 'Đang phát đoạn đã cắt' : (hi || hv ? 'Kéo hoặc chụm trên khung để căn' + (state.viewMode === 'trim' && hv ? ' · chạm để phát/dừng' : '') : '');
+
+  let status;
+  if (isReady()) status = 'Sẵn sàng! ' + (state.viewMode === 'trim' && hv ? 'Chọn đoạn và căn khung video' : 'Bấm Xem trước Live để xem chuyển động');
+  else if (m === 'both') status = state.imgEl ? 'Cần tải thêm video...' : (state.videoUrl ? 'Cần tải thêm ảnh tĩnh...' : 'Chưa có đủ tệp');
+  else status = m === 'image' ? 'Chưa có ảnh' : 'Chưa có video';
+  $('previewStatus').textContent = status;
+  const bars = (hv || state.imgEl) && curT().s < 0.995;
+  $('previewRatio').textContent = 'Khung: ' + aspectLabel() + (bars ? ' · còn viền đen (mở Cắt lại để lấp đầy)' : '');
+  $('btnExport').disabled = !isReady() || state.busy;
+  updateLiveBtn();
+}
+
+/* ============ Export ============ */
+function fitSize(sw, sh, ratio, cap) {
+  let cw, ch;
+  if (sw / sh > ratio) { ch = sh; cw = sh * ratio; } else { cw = sw; ch = sw / ratio; }
+  const k = Math.min(1, cap / Math.max(cw, ch));
+  return { w: Math.max(2, Math.round(cw * k / 2) * 2), h: Math.max(2, Math.round(ch * k / 2) * 2) };
+}
+function drawCover(ctx, src, sw, sh, W, H, m, r) {
+  // Cùng công thức với khung xem trước: khung = r x 1 (r = tỷ lệ khung), nội dung phủ kín (cover) x zoom,
+  // tâm nội dung lệch (x*r, y) so với tâm khung. Toàn bộ khung r x 1 được ánh xạ vừa khít lên canvas W x H.
+  m = m || { s: 1, x: 0, y: 0 }; r = r || W / H;
+  const Wv = r * H, sc = Math.max(r / sw, 1 / sh) * m.s * H, dw = sw * sc, dh = sh * sc;
+  ctx.save();
+  ctx.setTransform(W / Wv, 0, 0, 1, 0, 0);
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, Wv, H);
+  ctx.drawImage(src, (Wv - dw) / 2 + m.x * Wv, (H - dh) / 2 + m.y * H, dw, dh);
+  ctx.restore();
+}
+function triggerDownload(blob, name) {
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+/* ---- Google Motion Photo: JPEG + XMP + MP4 nối đuôi ---- */
+function buildMotionPhoto(jpg, mp4, presUs) {
+  if (jpg[0] !== 0xFF || jpg[1] !== 0xD8) throw new Error('Ảnh JPEG không hợp lệ.');
+  const L = mp4.length, P = Math.max(0, Math.round(presUs || 0));
+  const xmp = '<?xpacket begin="\uFEFF" id="W5M0MpCehiHzreSzNTczkc9d"?>' +
+    '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Lion Motion"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">' +
+    '<rdf:Description rdf:about="" xmlns:GCamera="http://ns.google.com/photos/1.0/camera/" xmlns:Container="http://ns.google.com/photos/1.0/container/" xmlns:Item="http://ns.google.com/photos/1.0/container/item/"' +
+    ' GCamera:MotionPhoto="1" GCamera:MotionPhotoVersion="1" GCamera:MotionPhotoPresentationTimestampUs="' + P + '"' +
+    ' GCamera:MicroVideo="1" GCamera:MicroVideoVersion="1" GCamera:MicroVideoOffset="' + L + '" GCamera:MicroVideoPresentationTimestampUs="' + P + '">' +
+    '<Container:Directory><rdf:Seq>' +
+    '<rdf:li rdf:parseType="Resource"><Container:Item Item:Mime="image/jpeg" Item:Semantic="Primary" Item:Length="0" Item:Padding="0"/></rdf:li>' +
+    '<rdf:li rdf:parseType="Resource"><Container:Item Item:Mime="video/mp4" Item:Semantic="MotionPhoto" Item:Length="' + L + '" Item:Padding="0"/></rdf:li>' +
+    '</rdf:Seq></Container:Directory></rdf:Description></rdf:RDF></x:xmpmeta><?xpacket end="w"?>';
+  const enc = new TextEncoder(), ns = enc.encode('http://ns.adobe.com/xap/1.0/\0'), body = enc.encode(xmp);
+  const segLen = 2 + ns.length + body.length;
+  if (segLen > 65535) throw new Error('XMP quá lớn.');
+  const seg = new Uint8Array(2 + segLen);
+  seg[0] = 0xFF; seg[1] = 0xE1; seg[2] = segLen >> 8; seg[3] = segLen & 0xFF;
+  seg.set(ns, 4); seg.set(body, 4 + ns.length);
+  let pos = 2;
+  if (jpg[2] === 0xFF && jpg[3] === 0xE0) pos = 4 + ((jpg[4] << 8) | jpg[5]);   // giữ JFIF đứng đầu
+  return new Blob([jpg.subarray(0, pos), seg, jpg.subarray(pos), mp4], { type: 'image/jpeg' });
+}
+
+const modal = $('progressModal');
+function openModal() {
+  modal.classList.remove('hidden'); modal.classList.add('flex');
+  $('pmTitle').textContent = 'Đang tạo Motion Photo'; $('pmNote').classList.add('hidden');
+  $('pmCancel').classList.remove('hidden'); $('pmDownload').classList.add('hidden'); $('pmClose').classList.add('hidden');
+  setProgress(0, 0, 'Đang chuẩn bị...');
+}
+function closeModal() { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+function setProgress(pct, step, msg) {
+  pct = clamp(Math.round(pct), 0, 100);
+  $('pmBar').style.width = pct + '%'; $('pmPercent').textContent = pct + '%';
+  if (msg) $('pmStatus').textContent = msg;
+  document.querySelectorAll('#pmSteps li').forEach(li => {
+    const i = +li.dataset.step, dot = li.querySelector('.dot');
+    if (i < step) { li.className = 'flex items-center gap-2 text-emerald-600'; dot.className = 'dot w-2 h-2 rounded-full bg-emerald-500'; }
+    else if (i === step) { li.className = 'flex items-center gap-2 text-blue-700 font-semibold'; dot.className = 'dot w-2 h-2 rounded-full bg-blue-600'; }
+    else { li.className = 'flex items-center gap-2 text-gray-400'; dot.className = 'dot w-2 h-2 rounded-full bg-gray-300'; }
+  });
+}
+$('pmCancel').addEventListener('click', () => { state.abort = true; $('pmStatus').textContent = 'Đang hủy...'; });
+$('pmClose').addEventListener('click', closeModal);
+$('pmDownload').addEventListener('click', () => { if (state.lastBlob) triggerDownload(state.lastBlob, state.lastName); });
+const ABORT = 'ABORT';
+
+/* ---- MP4 (H.264) tự đóng gói: đúng 30fps, đúng thời lượng, không phân mảnh ---- */
+function muxMp4(samples, avcC, W, H) {
+  const enc = new TextEncoder(), A = t => enc.encode(t);
+  const cat = l => { let n = 0; for (const a of l) n += a.length; const o = new Uint8Array(n); let p = 0; for (const a of l) { o.set(a, p); p += a.length; } return o; };
+  const u32 = n => { const a = new Uint8Array(4); new DataView(a.buffer).setUint32(0, n >>> 0); return a; };
+  const u16 = n => { const a = new Uint8Array(2); new DataView(a.buffer).setUint16(0, n & 0xFFFF); return a; };
+  const z = n => new Uint8Array(n);
+  const box = (t, ...p) => { const b = cat(p); return cat([u32(8 + b.length), A(t), b]); };
+  const n = samples.length, TS = FPS * 100, DUR = n * 100, ms = Math.round(n * 1000 / FPS);
+  const mtx = cat([u32(0x10000), z(12), u32(0x10000), z(12), u32(0x40000000)]);
+  const mvhd = box('mvhd', z(4), u32(0), u32(0), u32(1000), u32(ms), u32(0x10000), u16(0x100), z(10), mtx, z(24), u32(2));
+  const tkhd = box('tkhd', u32(3), u32(0), u32(0), u32(1), z(4), u32(ms), z(8), u16(0), u16(0), u16(0), z(2), mtx, u32(W * 65536), u32(H * 65536));
+  const mdhd = box('mdhd', z(4), u32(0), u32(0), u32(TS), u32(DUR), u16(0x55C4), u16(0));
+  const hdlr = box('hdlr', z(4), z(4), A('vide'), z(12), A('VideoHandler\0'));
+  const vmhd = box('vmhd', u32(1), z(8));
+  const dinf = box('dinf', box('dref', z(4), u32(1), box('url ', u32(1))));
+  const avc1 = box('avc1', z(6), u16(1), z(2), z(2), z(12), u16(W), u16(H), u32(0x480000), u32(0x480000), z(4), u16(1), z(32), u16(0x18), u16(0xFFFF), box('avcC', avcC));
+  const stsd = box('stsd', z(4), u32(1), avc1);
+  const stts = box('stts', z(4), u32(1), u32(n), u32(100));
+  const keys = []; samples.forEach((x, i) => { if (x.key) keys.push(i + 1); });
+  const stss = box('stss', z(4), u32(keys.length), ...keys.map(u32));
+  const stsc = box('stsc', z(4), u32(1), u32(1), u32(n), u32(1));
+  const stsz = box('stsz', z(4), u32(0), u32(n), ...samples.map(x => u32(x.d.length)));
+  const build = off => box('moov', mvhd, box('trak', tkhd, box('mdia', mdhd, hdlr,
+    box('minf', vmhd, dinf, box('stbl', stsd, stts, stss, stsc, stsz, box('stco', z(4), u32(1), u32(off)))))));
+  const ftyp = box('ftyp', A('isom'), u32(512), A('isom'), A('iso2'), A('avc1'), A('mp41'));
+  let moov = build(0);
+  moov = build(ftyp.length + moov.length + 8);
+  return cat([ftyp, moov, box('mdat', ...samples.map(x => x.d))]);
+}
+
+// Dựng từng khung theo thời gian mã hoá (không phụ thuộc tốc độ máy) -> đúng N khung ở 30fps
+async function encodeWebCodecs(W, H, N, renderFrame, onProg, checkAbort) {
+  const cfg = { codec: 'avc1.640028', width: W, height: H, bitrate: 8e6, framerate: FPS, avc: { format: 'avc' } };
+  const sup = await VideoEncoder.isConfigSupported(cfg).catch(() => null);
+  if (!sup || !sup.supported) return null;
+  const samples = []; let desc = null, err = null;
+  const enc = new VideoEncoder({
+    output: (c, meta) => {
+      const d = new Uint8Array(c.byteLength); c.copyTo(d);
+      samples.push({ d, key: c.type === 'key' });
+      const x = meta && meta.decoderConfig && meta.decoderConfig.description;
+      if (x && !desc) desc = (ArrayBuffer.isView(x) ? new Uint8Array(x.buffer, x.byteOffset, x.byteLength) : new Uint8Array(x)).slice();
+    },
+    error: e => { err = e; }
+  });
+  enc.configure(cfg);
+  try {
+    for (let i = 0; i < N; i++) {
+      checkAbort();
+      const cv = await renderFrame(i);
+      const f = new VideoFrame(cv, { timestamp: Math.round(i * 1e6 / FPS), duration: Math.round(1e6 / FPS) });
+      enc.encode(f, { keyFrame: i % FPS === 0 });
+      f.close();
+      while (enc.encodeQueueSize > 6) await sleep(4);
+      if (err) throw err;
+      onProg((i + 1) / N);
+    }
+    await enc.flush();
+  } finally { try { enc.close(); } catch (_) {} }
+  if (err || !desc || samples.length < N) throw new Error('Bộ mã hoá video không trả đủ khung hình.');
+  return muxMp4(samples, desc, W, H);
+}
+
+
+// Xuất nhanh: phát video ở tốc độ cao rồi lấy từng khung bằng requestVideoFrameCallback (không seek từng khung như trước)
+async function encodeVideoFast(ev, W, H, N, drawNow, canvas, onProg, checkAbort) {
+  const cfg = { codec: 'avc1.640028', width: W, height: H, bitrate: 8e6, framerate: FPS, avc: { format: 'avc' } };
+  const sup = await VideoEncoder.isConfigSupported(cfg).catch(() => null);
+  if (!sup || !sup.supported) return null;
+  const samples = []; let desc = null, err = null, next = 0, rate = 4, lastM = null;
+  const enc = new VideoEncoder({
+    output: (c, meta) => {
+      const d = new Uint8Array(c.byteLength); c.copyTo(d);
+      samples.push({ d, key: c.type === 'key' });
+      const x = meta && meta.decoderConfig && meta.decoderConfig.description;
+      if (x && !desc) desc = (ArrayBuffer.isView(x) ? new Uint8Array(x.buffer, x.byteOffset, x.byteLength) : new Uint8Array(x)).slice();
+    },
+    error: e => { err = e; }
+  });
+  enc.configure(cfg);
+  let finish, fail; const done = new Promise((res, rej) => { finish = res; fail = rej; });
+  const emit = () => {
+    drawNow(next / FPS);
+    const f = new VideoFrame(canvas, { timestamp: Math.round(next * 1e6 / FPS), duration: Math.round(1e6 / FPS) });
+    enc.encode(f, { keyFrame: next % FPS === 0 }); f.close(); next++;
+  };
+  const complete = () => { while (next < N) emit(); ev.pause(); finish(); };
+  const onFrame = (now, meta) => {
+    try {
+      checkAbort(); if (err) throw err;
+      const t = meta.mediaTime - state.start;
+      if (lastM !== null && meta.mediaTime - lastM > 1.5 / FPS && rate > 1) { rate = Math.max(1, rate / 2); ev.playbackRate = rate; }   // bị rơi khung -> chạy chậm lại
+      lastM = meta.mediaTime;
+      while (next < N && next / FPS <= t + 0.5 / FPS) emit();      // điền các khung lưới 30fps đã tới hạn
+      if (enc.encodeQueueSize > 8 && !ev.paused) {
+        ev.pause();
+        const resume = () => { if (enc.encodeQueueSize > 3) return; enc.removeEventListener('dequeue', resume); if (next < N) ev.play().catch(() => {}); };
+        enc.addEventListener('dequeue', resume);
+      }
+      onProg(Math.min(1, next / N));
+      if (next >= N || meta.mediaTime >= state.end - 0.001) return complete();
+      ev.requestVideoFrameCallback(onFrame);
+    } catch (e) { fail(e); }
+  };
+  ev.addEventListener('ended', () => { try { complete(); } catch (e) { fail(e); } }, { once: true });
+  const guard = setTimeout(() => fail(new Error('Dựng video quá lâu')), (state.end - state.start) * 2000 + 20000);
+  try {
+    await seekAndWait(ev, state.start);
+    ev.playbackRate = rate;
+    ev.requestVideoFrameCallback(onFrame);
+    await ev.play();
+    await done;
+    await enc.flush();
+  } finally { clearTimeout(guard); try { ev.pause(); ev.playbackRate = 1; } catch (_) {} try { enc.close(); } catch (_) {} }
+  if (err || !desc || samples.length < N) throw new Error('Bộ mã hoá video không trả đủ khung hình.');
+  return muxMp4(samples, desc, W, H);
+}
+
+// Dự phòng khi không có WebCodecs: ghi thời gian thực, kết thúc theo đồng hồ để không bị cụt
+async function encodeRealtime(canvas, mime, segLen, tickDraw, startPlay, onProg, checkAbort) {
+  let stream = canvas.captureStream(0);
+  const vt = stream.getVideoTracks()[0], manual = !!(vt && typeof vt.requestFrame === 'function');
+  if (!manual) stream = canvas.captureStream(FPS);
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8000000 });
+  const chunks = []; rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  const stopped = new Promise(r => { rec.onstop = r; });
+  try {
+    tickDraw(0); rec.start(250); if (manual) vt.requestFrame();
+    await startPlay();
+    const t0 = performance.now(); let last = 0;
+    await new Promise((res, rej) => {
+      const tick = () => {
+        try { checkAbort(); } catch (e) { return rej(e); }
+        const el = (performance.now() - t0) / 1000, p = clamp(el / segLen, 0, 1), n = performance.now();
+        tickDraw(p);
+        if (manual && n - last >= 1000 / FPS - 2) { vt.requestFrame(); last = n; }
+        onProg(p);
+        if (el >= segLen) return res();
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+    if (manual) vt.requestFrame();
+    await sleep(150);
+  } finally { if (rec.state !== 'inactive') rec.stop(); }
+  await stopped;
+  return new Uint8Array(await new Blob(chunks, { type: mime }).arrayBuffer());
+}
+
+async function runExport() {
+  if (state.busy || !isReady()) return;
+  const mime = pickMp4(), canRT = !!mime && !!HTMLCanvasElement.prototype.captureStream;
+  if (!hasWC && !canRT) { $('mp4Warn').classList.remove('hidden'); return showToast('Trình duyệt này không ghi được MP4. Hãy dùng Chrome/Edge mới hoặc Safari.'); }
+  state.busy = true; state.abort = false;
+  stopSegmentLoop(); stopHold(); $('btnExport').disabled = true; openModal();
+
+  let ev = null;
+  try {
+    const ratio = getRatio(), fromVideo = state.mode !== 'image';
+    clampAll();
+    const checkAbort = () => { if (state.abort) throw new Error(ABORT); };
+    setProgress(2, 0, 'Đang xử lý khung hình...');
+    await ensureTextFont();
+    if (fromVideo) {
+      ev = document.createElement('video');
+      ev.muted = true; ev.playsInline = true; ev.preload = 'auto'; ev.src = state.videoUrl;
+      if (!(await waitEvent(ev, 'loadeddata', 10000, () => ev.readyState >= 2))) throw new Error('Không nạp được video để xử lý.');
+    }
+
+    // Ảnh tĩnh: dùng đúng zoom/pan người dùng đã chỉnh (video: vt, ảnh: it)
+    const still = document.createElement('canvas');
+    if (state.mode === 'video') {
+      const sz = fitSize(ev.videoWidth, ev.videoHeight, ratio, 4096);
+      still.width = sz.w; still.height = sz.h;
+      await seekAndWait(ev, state.key);      // ảnh chính = khung hình người dùng đã chọn trên dải film
+      drawCover(still.getContext('2d'), ev, ev.videoWidth, ev.videoHeight, sz.w, sz.h, state.vt, ratio);
+    } else {
+      const im = state.imgEl, sz = fitSize(im.naturalWidth, im.naturalHeight, ratio, 4096);
+      still.width = sz.w; still.height = sz.h;
+      drawCover(still.getContext('2d'), im, im.naturalWidth, im.naturalHeight, sz.w, sz.h, state.it, ratio);
+    }
+    drawTextOverlay(still.getContext('2d'), still.width, still.height);
+    const stillBlob = await new Promise(r => still.toBlob(r, 'image/jpeg', 0.95));
+    if (!stillBlob) throw new Error('Không tạo được ảnh tĩnh.');
+    checkAbort();
+
+    // Video
+    const srcW = fromVideo ? ev.videoWidth : state.imgEl.naturalWidth, srcH = fromVideo ? ev.videoHeight : state.imgEl.naturalHeight;
+    const vs = fitSize(srcW, srcH, ratio, state.fast ? 1280 : 1920), canvas = document.createElement('canvas');
+    canvas.width = vs.w; canvas.height = vs.h;
+    const ctx = canvas.getContext('2d');
+    const segLen = fromVideo ? state.end - state.start : state.motionDur;
+    const N = Math.max(2, Math.round(segLen * FPS));
+    const staticImg = !fromVideo && state.motionStyle === 'still';   // ảnh đứng yên: chỉ vẽ một lần
+    // Hòa tan "dính" vào video: đầu đoạn đi ra từ ảnh tĩnh, cuối đoạn tan dần về đúng ảnh tĩnh.
+    // Nhờ vậy khung đầu/cuối video trùng ảnh chính nên Google Photos chuyển ảnh <-> video liền mạch, không bị giật.
+    const smooth = x => { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); };
+    const FADE_END = Math.min(FX.tail, segLen * 0.35), FADE_START = Math.min(FX.head, segLen * 0.25);   // FX khai báo ở khối HIỆU ỨNG MỜ
+    const blendStart = state.mode !== 'video' || (state.key - state.start) < 0.1;
+    const drawAt = (p, t) => {
+      if (fromVideo) drawCover(ctx, ev, ev.videoWidth, ev.videoHeight, vs.w, vs.h, state.vt, ratio);
+      else drawCover(ctx, state.imgEl, srcW, srcH, vs.w, vs.h, imgTransform(p), ratio);
+      drawTextOverlay(ctx, vs.w, vs.h);
+      if (staticImg) return;
+      let a = 0;
+      if (t > segLen - FADE_END) a = smooth((t - (segLen - FADE_END)) / Math.max(0.001, FADE_END - 1 / FPS));
+      if (blendStart && t < FADE_START) a = Math.max(a, 1 - smooth(t / FADE_START));
+      if (a > 0.002) {
+        ctx.save(); ctx.globalAlpha = a; ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(still, 0, 0, vs.w, vs.h); ctx.restore();
+      }
+    };
+
+    let mp4 = null;
+    if (hasWC && fromVideo && 'requestVideoFrameCallback' in HTMLVideoElement.prototype) {
+      try {
+        mp4 = await encodeVideoFast(ev, vs.w, vs.h, N, t => drawAt(0, t), canvas, p => setProgress(5 + p * 78, 0, 'Đang dựng khung hình...'), checkAbort);
+      } catch (e) { if (e && e.message === ABORT) throw e; console.warn('Xuất nhanh lỗi, chuyển sang cách seek từng khung', e); mp4 = null; }
+    }
+    if (hasWC && !mp4) {
+      try {
+        mp4 = await encodeWebCodecs(vs.w, vs.h, N, async i => {
+          if (fromVideo) { await seekAndWait(ev, Math.min(state.start + i / FPS, state.end - 0.001, state.duration - 0.001)); drawAt(0, i / FPS); }
+          else if (!staticImg || i === 0) drawAt(i / (N - 1), i / FPS);
+          return canvas;
+        }, p => setProgress(5 + p * 78, 0, 'Đang dựng khung hình 30fps...'), checkAbort);
+      } catch (e) { if (e && e.message === ABORT) throw e; console.warn('WebCodecs lỗi, chuyển sang ghi thời gian thực', e); mp4 = null; }
+    }
+    if (!mp4) {
+      if (!canRT) throw new Error('Trình duyệt không mã hoá được video H.264.');
+      if (fromVideo) await seekAndWait(ev, state.start);
+      mp4 = await encodeRealtime(canvas, mime, segLen, p => {
+        drawAt(p, p * segLen);
+        if (fromVideo && ev.currentTime >= state.end - 0.02 && !ev.paused) ev.pause();
+      }, async () => { if (fromVideo) await ev.play(); },
+      p => setProgress(5 + p * 78, 0, 'Đang ghi video theo đoạn đã cắt...'), checkAbort);
+    }
+    if (ev) ev.pause();
+    checkAbort();
+    if (!mp4 || !mp4.length) throw new Error('Không ghi được video. Hãy thử lại.');
+
+    setProgress(88, 1, 'Đang nhúng XMP Motion Photo...');
+    const jpgBytes = new Uint8Array(await stillBlob.arrayBuffer());
+    const presUs = state.mode === 'video' ? Math.round(clamp(state.key - state.start, 0, segLen) * 1e6) : 0;
+    const out = buildMotionPhoto(jpgBytes, mp4, presUs);
+    const d = new Date(), z2 = n => String(n).padStart(2, '0');
+    state.lastBlob = out;
+    state.lastName = `MVIMG_${d.getFullYear()}${z2(d.getMonth() + 1)}${z2(d.getDate())}_${z2(d.getHours())}${z2(d.getMinutes())}${z2(d.getSeconds())}.jpg`;
+    setProgress(100, 2, 'Hoàn tất!');
+    $('pmTitle').textContent = 'Hoàn tất';
+    $('pmCancel').classList.add('hidden'); $('pmDownload').classList.remove('hidden'); $('pmClose').classList.remove('hidden');
+    $('pmNote').classList.remove('hidden');
+    $('pmNote').textContent = `Đã tạo ${state.lastName} (${(out.size / 1048576).toFixed(2)} MB): ảnh JPEG + video ${segLen.toFixed(2)}s (${N} khung, ${FPS}fps) nhúng sẵn. Chép vào DCIM/Camera trên Android rồi mở bằng Google Photos.`;
+    triggerDownload(out, state.lastName);
+    showToast('Tạo Motion Photo thành công!');
+  } catch (err) {
+    if (err && err.message === ABORT) { closeModal(); showToast('Đã hủy quá trình tạo Motion Photo.'); }
+    else {
+      console.error(err);
+      $('pmTitle').textContent = 'Có lỗi xảy ra';
+      $('pmStatus').textContent = (err && err.message) || 'Không thể tạo Motion Photo.';
+      $('pmCancel').classList.add('hidden'); $('pmClose').classList.remove('hidden');
+    }
+  } finally {
+    if (ev) { ev.pause(); ev.removeAttribute('src'); ev.load(); }
+    state.busy = false; syncUI();
+    if (hasVideo() && state.viewMode === 'trim') startSegmentLoop(true);
+  }
+}
+/* ============ Văn bản chồng lên ảnh và video ============ */
+// Một hàm vẽ duy nhất (drawTextOverlay) dùng cho cả khung xem trước lẫn bản xuất. Kích thước chữ tính theo % bề rộng khung,
+// ngắt dòng tính ở cỡ chuẩn 100px rồi co giãn -> xem trước và bản xuất xuống dòng giống hệt nhau.
+let TXT_FONT = 'Inter, "Helvetica Neue", Arial, sans-serif', TXT_W = 700;
+const TXT_COLORS = ['#ffffff', '#000000', '#facc15', '#f472b6', '#60a5fa', '#4ade80'];
+const mctx = document.createElement('canvas').getContext('2d'), textOv = $('textOv');
+let txtCache = { key: '', lay: null }, txtBounds = null, txtDrag = null;
+function wrapLine(p, maxW) {
+  const words = p.split(/\s+/).filter(Boolean), out = []; let cur = '';
+  for (const w of words) {
+    const test = cur ? cur + ' ' + w : w;
+    if (mctx.measureText(test).width <= maxW) { cur = test; continue; }
+    if (cur) { out.push(cur); cur = ''; }
+    if (mctx.measureText(w).width <= maxW) { cur = w; continue; }
+    let seg = '';
+    for (const ch of w) { if (seg && mctx.measureText(seg + ch).width > maxW) { out.push(seg); seg = ch; } else seg += ch; }
+    cur = seg;
+  }
+  if (cur) out.push(cur);
+  return out.length ? out : [''];
+}
+function textLayout() {
+  const t = state.text, key = t.value + '|' + t.size + '|' + TXT_FONT + '|' + TXT_W;
+  if (txtCache.key === key && txtCache.lay) return txtCache.lay;
+  mctx.font = `${TXT_W} 100px ${TXT_FONT}`;
+  const maxW = 100 / t.size * 0.88, lines = [];
+  t.value.replace(/\s+$/, '').split('\n').forEach(p => lines.push(...wrapLine(p, maxW)));
+  const w = Math.max(...lines.map(l => mctx.measureText(l).width));
+  txtCache = { key, lay: { lines, w } };
+  return txtCache.lay;
+}
+const txtLum = c => { const n = parseInt(c.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; };
+function drawTextOverlay(ctx, W, H, rec) {
+  const t = state.text;
+  if (!t.value.trim() || !W || !H) { if (rec) rec.b = null; return; }
+  const L = textLayout(), k = t.size * W / 100, fs = 100 * k, lh = 125 * k, bh = L.lines.length * lh, py = 30 * k;
+  let rx, ry, rw, rh, cx, ty;
+  if (t.bar) { rh = bh + 2 * py; rw = W; rx = 0; ry = clamp(t.y * H - rh / 2, 0, Math.max(0, H - rh)); cx = W / 2; ty = ry + py; }
+  else { rh = bh; rw = Math.min(L.w * k, W); rx = clamp(t.x * W - rw / 2, 0, Math.max(0, W - rw)); ry = clamp(t.y * H - rh / 2, 0, Math.max(0, H - rh)); cx = rx + rw / 2; ty = ry; }
+  ctx.save();
+  if (t.bar) { ctx.fillStyle = `rgba(0,0,0,${t.barOpacity})`; ctx.fillRect(rx, ry, rw, rh); }
+  else { ctx.shadowColor = txtLum(t.color) > 0.5 ? 'rgba(0,0,0,.6)' : 'rgba(255,255,255,.6)'; ctx.shadowBlur = fs * 0.12; ctx.shadowOffsetY = fs * 0.03; }
+  ctx.font = `${TXT_W} ${fs}px ${TXT_FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = t.color;
+  L.lines.forEach((ln, i) => ctx.fillText(ln, cx, ty + lh * (i + 0.5)));
+  ctx.restore();
+  if (rec) rec.b = { x: rx / W, y: ry / H, w: rw / W, h: rh / H };
+}
+function renderTextOv() {
+  const w = previewBox.clientWidth, h = previewBox.clientHeight;
+  if (!w || !h) return;
+  const dpr = Math.min(window.devicePixelRatio || 1, 3), pw = Math.round(w * dpr), ph = Math.round(h * dpr);
+  if (textOv.width !== pw || textOv.height !== ph) { textOv.width = pw; textOv.height = ph; }
+  const c = textOv.getContext('2d'), rec = {};
+  c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, pw, ph); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  drawTextOverlay(c, w, h, rec); txtBounds = rec.b || null;
+}
+if (window.ResizeObserver) new ResizeObserver(renderTextOv).observe(previewBox);
+async function ensureTextFont() {
+  try { if (document.fonts && state.text.value.trim()) await document.fonts.load(`${TXT_W} 48px ${TXT_FONT}`, state.text.value); } catch (_) {}
+  txtCache.key = '';
+}
+function txtDown(e) {
+  if (state.busy || !txtBounds) return false;
+  const r = previewBox.getBoundingClientRect(), fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height, b = txtBounds, s = 0.02;
+  if (fx < b.x - s || fx > b.x + b.w + s || fy < b.y - s || fy > b.y + b.h + s) return false;
+  txtDrag = { id: e.pointerId, fx: e.clientX, fy: e.clientY, x0: state.text.x, y0: state.text.y };
+  gest.moved = 99;                                   // không coi là chạm để phát/dừng video
+  try { previewBox.setPointerCapture(e.pointerId); } catch (_) {}
+  return true;
+}
+function txtMove(e) {
+  if (!txtDrag || e.pointerId !== txtDrag.id) return false;
+  const r = previewBox.getBoundingClientRect(), b = txtBounds || { w: 0, h: 0 }, t = state.text;
+  t.y = clamp(txtDrag.y0 + (e.clientY - txtDrag.fy) / r.height, b.h / 2, 1 - b.h / 2);
+  if (!t.bar) t.x = clamp(txtDrag.x0 + (e.clientX - txtDrag.fx) / r.width, b.w / 2, 1 - b.w / 2);
+  renderTextOv(); return true;
+}
+function txtUp(e) { if (!txtDrag || e.pointerId !== txtDrag.id) return false; txtDrag = null; return true; }
+
+function syncTextUI() {
+  const t = state.text, custom = !TXT_COLORS.includes(t.color);
+  $('textSizeVal').textContent = (t.size * 100).toFixed(1).replace(/\.0$/, '') + '%';
+  $('textBarOpVal').textContent = Math.round(t.barOpacity * 100) + '%';
+  $('textBgSeg').querySelectorAll('button').forEach(b => b.classList.toggle('active', (b.dataset.bg === 'bar') === t.bar));
+  const row = $('textBarRow'); row.style.opacity = t.bar ? '1' : '.4'; $('textBarOp').disabled = !t.bar;
+  $('textColors').querySelectorAll('.sw').forEach(b => b.classList.toggle('active', b.dataset.c === t.color));
+  $('textColorPick').classList.toggle('active', custom); if (custom) $('textColorPick').value = t.color;
+  $('btnTextClear').classList.toggle('hidden', !t.value.trim());
+  renderTextOv();
+}
+TXT_COLORS.forEach(c => {
+  const b = document.createElement('button');
+  b.className = 'sw'; b.style.background = c; b.dataset.c = c; b.setAttribute('aria-label', 'Màu chữ ' + c);
+  b.addEventListener('click', () => { state.text.color = c; syncTextUI(); });
+  $('textColors').insertBefore(b, $('textColorPick'));
+});
+$('textColorPick').addEventListener('input', e => { state.text.color = e.target.value; syncTextUI(); });
+$('textInput').addEventListener('input', e => { state.text.value = e.target.value; syncTextUI(); ensureTextFont().then(renderTextOv); });
+$('textSize').addEventListener('input', e => { state.text.size = parseFloat(e.target.value) / 100; syncTextUI(); });
+$('textBarOp').addEventListener('input', e => { state.text.barOpacity = parseInt(e.target.value, 10) / 100; syncTextUI(); });
+$('textBgSeg').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { state.text.bar = b.dataset.bg === 'bar'; syncTextUI(); }));
+$('btnTextClear').addEventListener('click', () => { state.text.value = ''; $('textInput').value = ''; syncTextUI(); });
+/* ---- Phông chữ: có sẵn vài kiểu + nhập tệp .ttf/.otf/.woff/.woff2 từ thiết bị ---- */
+const FONT_PRESETS = [
+  ['inter', 'Mặc định (Inter)', 'Inter, "Helvetica Neue", Arial, sans-serif', 700],
+  ['corm', 'Cormorant (sang trọng)', '"Cormorant Garamond", Georgia, serif', 600],
+  ['georgia', 'Georgia (serif)', 'Georgia, "Times New Roman", serif', 700],
+  ['mono', 'Courier (đánh máy)', '"Courier New", monospace', 700]
+];
+let userFont = null;
+const fontSel = $('textFont');
+FONT_PRESETS.forEach(p => { const o = document.createElement('option'); o.value = p[0]; o.textContent = p[1]; fontSel.appendChild(o); });
+function applyFont(id) {
+  if (id === 'user' && userFont) { TXT_FONT = `"${userFont.family}", sans-serif`; TXT_W = 400; }
+  else { const p = FONT_PRESETS.find(x => x[0] === id) || FONT_PRESETS[0]; TXT_FONT = p[2]; TXT_W = p[3]; }
+  txtCache.key = '';
+  ensureTextFont().then(() => { txtCache.key = ''; renderTextOv(); });
+}
+fontSel.addEventListener('change', () => applyFont(fontSel.value));
+$('btnFontUpload').addEventListener('click', () => $('fontInput').click());
+$('fontInput').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const ff = new FontFace('LMUser' + Date.now(), await f.arrayBuffer());
+    await ff.load(); document.fonts.add(ff);
+    if (userFont) { try { document.fonts.delete(userFont); } catch (_) {} }
+    userFont = ff;
+    let o = fontSel.querySelector('option[value=user]');
+    if (!o) { o = document.createElement('option'); o.value = 'user'; fontSel.appendChild(o); }
+    o.textContent = 'Của bạn: ' + f.name.replace(/\.[^.]+$/, '');
+    fontSel.value = 'user'; $('fontName').textContent = f.name;
+    applyFont('user'); showToast('Đã nhập phông chữ');
+  } catch (err) { showToast('Không đọc được tệp phông này.'); }
+});
+
+syncTextUI();
+
+/* ============ Popup cắt thủ công (ảnh trước, video sau) ============ */
+// Mô hình toạ độ giống hệt khung chính: s = zoom so với phủ kín (cover), x/y = độ lệch tâm tính theo phần của khung.
+// Nên kết quả xác nhận được gán thẳng vào state.it / state.vt và xuất ra đúng như đã thấy.
+let cmRAF = null;
+const cm = { open: false, kind: 'image', lock: false, fixedR: 1, d: { w: 0, h: 0 }, aspect: 'original', swap: false, t: { s: 1, x: 0, y: 0 }, fw: 1, fh: 1, SW: 0, SH: 0 };
+const cmEl = () => cm.kind === 'image' ? $('cmImg') : $('cmVid');
+function cmRatio() {
+  if (cm.lock) return cm.fixedR;
+  const a = ASPECTS.find(x => x.id === cm.aspect);
+  if (a.id === 'original') return cm.d.w / cm.d.h;
+  return cm.swap ? 1 / a.r : a.r;
+}
+function zminR(d, r) { const a = r / d.w, b = 1 / d.h; return Math.min(1, Math.min(a, b) / Math.max(a, b)); }
+function clampR(t, d, r) {
+  t.s = clamp(t.s, zminR(d, r), MAX_ZOOM);
+  const sc0 = Math.max(r / d.w, 1 / d.h), dw = d.w * sc0 * t.s, dh = d.h * sc0 * t.s;
+  const mx = Math.abs(dw - r) / 2 / r, my = Math.abs(dh - 1) / 2;
+  t.x = clamp(t.x, -mx, mx); t.y = clamp(t.y, -my, my);
+}
+let cmTwTimer = null;
+function cmTween() { const st = $('cmStage'); st.classList.add('cmtw'); clearTimeout(cmTwTimer); cmTwTimer = setTimeout(() => st.classList.remove('cmtw'), 320); }
+function cmLayout() {
+  const st = $('cmStage'); cm.SW = st.clientWidth; cm.SH = st.clientHeight;
+  if (!cm.SW || !cm.SH || !cm.d.w) return;
+  const r = cmRatio(), m = 16;
+  let fw = cm.SW - 2 * m, fh = fw / r;
+  if (fh > cm.SH - 2 * m) { fh = cm.SH - 2 * m; fw = fh * r; }
+  cm.fw = fw; cm.fh = fh;
+  const f = $('cmFrame');
+  f.style.width = fw + 'px'; f.style.height = fh + 'px'; f.style.left = (cm.SW - fw) / 2 + 'px'; f.style.top = (cm.SH - fh) / 2 + 'px';
+  cmApply();
+}
+function cmApply() {
+  const d = cm.d, r = cmRatio(), t = cm.t;
+  clampR(t, d, r);
+  const sc = Math.max(cm.fw / d.w, cm.fh / d.h) * t.s, mw = d.w * sc, mh = d.h * sc, el = cmEl();
+  el.style.width = mw + 'px'; el.style.height = mh + 'px';
+  el.style.transform = `translate(${cm.SW / 2 - mw / 2 + t.x * cm.fw}px, ${cm.SH / 2 - mh / 2 + t.y * cm.fh}px)`;
+  const z = $('cmZoom'); z.min = zminR(d, r); z.value = t.s;
+  $('cmZoomLabel').textContent = t.s.toFixed(2) + '×';
+}
+function cmChips() {
+  const w = $('cmChips'); w.innerHTML = '';
+  $('cmChipsRow').classList.toggle('hidden', cm.lock);
+  $('cmLockNote').classList.toggle('hidden', !cm.lock);
+  if (cm.lock) {
+    const a = ASPECTS.find(x => x.id === state.aspect), lbl = a.id === 'original' ? 'Gốc' : (state.swap && a.id !== '1:1' ? a.id.split(':').reverse().join(':') : a.id);
+    $('cmLockNote').textContent = `Tỷ lệ khung ${lbl} đã chốt theo ảnh tĩnh. Chỉ cần kéo và zoom video tới đúng vùng muốn lấy.`;
+    return;
+  }
+  ASPECTS.forEach(a => {
+    const b = document.createElement('button');
+    b.className = 'chip' + (a.id === cm.aspect ? ' active' : ''); b.textContent = a.label;
+    b.addEventListener('click', () => { cm.aspect = a.id; if (a.id === 'original' || a.id === '1:1') cm.swap = false; cmReset(); });
+    w.appendChild(b);
+  });
+  const dis = cm.aspect === 'original' || cm.aspect === '1:1';
+  $('cmSwap').disabled = dis; $('cmSwap').style.opacity = dis ? '.4' : '1';
+}
+function cmReset() { cm.t = { s: 1, x: 0, y: 0 }; cmTween(); cmLayout(); cmChips(); }
+$('cmSwap').addEventListener('click', () => { cm.swap = !cm.swap; cmReset(); });
+
+function openCrop(kind) {
+  if (state.busy || cm.open) return;
+  if (kind === 'image' && !state.imgEl) return;
+  if (kind === 'video' && !state.videoUrl) return;
+  stopHold(); stopSegmentLoop();
+  cm.open = true; cm.kind = kind;
+  const v = $('cmVid'), im = $('cmImg');
+  if (kind === 'image') {
+    cm.d = { w: state.imgEl.naturalWidth, h: state.imgEl.naturalHeight };
+    cm.lock = false; cm.aspect = state.aspect; cm.swap = state.swap; cm.t = { ...state.it };
+    im.src = state.imageUrl; im.classList.remove('hidden'); v.classList.add('hidden');
+    $('cmTitle').textContent = 'Cắt ảnh tĩnh'; $('cmPlay').classList.add('hidden');
+  } else {
+    cm.d = { w: state.vw, h: state.vh };
+    cm.lock = state.mode === 'both' && !!state.imgEl; cm.fixedR = getRatio();
+    cm.aspect = state.aspect; cm.swap = state.swap; cm.t = { ...state.vt };
+    v.classList.remove('hidden'); im.classList.add('hidden');
+    v.src = state.videoUrl; v.load();
+    waitEvent(v, 'loadeddata', 8000, () => v.readyState >= 2).then(async () => {
+      await seekAndWait(v, state.start);
+      if (cm.open && cm.kind === 'video') cmPlayStart();      // popup video tự phát đoạn đã cắt, lặp lại
+    });
+    $('cmTitle').textContent = 'Căn khung video'; $('cmPlay').classList.remove('hidden'); $('cmPlay').textContent = 'Dừng';
+  }
+  const m = $('cropModal'); m.classList.remove('hidden'); m.classList.add('flex');
+  cmChips(); cmLayout();
+  requestAnimationFrame(cmLayout);
+}
+function closeCrop() {
+  cm.open = false;
+  const m = $('cropModal'); m.classList.add('hidden'); m.classList.remove('flex');
+  cancelAnimationFrame(cmRAF); const v = $('cmVid'); v.pause(); v.removeAttribute('src'); v.load(); $('cmImg').removeAttribute('src');
+  cmPts.clear();
+}
+function resumeAfterCrop() { if (hasVideo() && state.viewMode === 'trim') startSegmentLoop(true); }
+async function cmConfirm() {
+  const kind = cm.kind, t = { ...cm.t };
+  if (kind === 'image') {
+    state.aspect = cm.aspect; state.swap = cm.swap; state.it = t;
+    state.vt = { s: 1, x: 0, y: 0 };          // video chưa căn theo khung mới
+  } else {
+    if (!cm.lock) { state.aspect = cm.aspect; state.swap = cm.swap; }
+    state.vt = t;
+    if (state.mode === 'both') state.link = false;   // video có khung riêng do người dùng tự căn
+  }
+  closeCrop();
+  clampAll(); syncUI();
+  if (kind === 'image' && state.mode === 'both' && state.videoUrl) return openCrop('video');   // ảnh xong -> sang video
+  if (kind === 'video' && state.mode === 'video') { await refreshKeyframe(); syncUI(); }
+  resumeAfterCrop();
+}
+$('cmOk').addEventListener('click', cmConfirm);
+$('cmCancel').addEventListener('click', () => { closeCrop(); syncUI(); resumeAfterCrop(); });
+$('btnCropImg').addEventListener('click', () => openCrop('image'));
+$('btnReplaceImg').addEventListener('click', () => { if (!state.busy) $('imageInput').click(); });
+$('btnReplaceVid').addEventListener('click', () => { if (!state.busy) $('videoInput').click(); });
+$('btnCropVid').addEventListener('click', () => openCrop('video'));
+
+$('cmZoom').addEventListener('input', e => { cm.t.s = parseFloat(e.target.value); cmApply(); });
+$('cmFit').addEventListener('click', () => { cm.t = { s: zminR(cm.d, cmRatio()), x: 0, y: 0 }; cmTween(); cmApply(); });
+$('cmFill').addEventListener('click', () => { cm.t = { s: 1, x: 0, y: 0 }; cmTween(); cmApply(); });
+function cmPlayStart() {
+  const v = $('cmVid');
+  if (v.currentTime < state.start - 0.05 || v.currentTime >= state.end - 0.05) v.currentTime = state.start;
+  v.play().catch(() => {}); $('cmPlay').textContent = 'Dừng';
+  cancelAnimationFrame(cmRAF);
+  const tick = () => {
+    if (!cm.open || v.paused) return;
+    if (v.currentTime >= state.end - 0.04 || v.ended) { v.currentTime = state.start; if (v.paused) v.play().catch(() => {}); }
+    cmRAF = requestAnimationFrame(tick);
+  };
+  cmRAF = requestAnimationFrame(tick);
+}
+function cmPlayStop() { cancelAnimationFrame(cmRAF); $('cmVid').pause(); $('cmPlay').textContent = 'Phát'; }
+$('cmPlay').addEventListener('click', () => { if ($('cmVid').paused) cmPlayStart(); else cmPlayStop(); });
+$('cmVid').addEventListener('timeupdate', () => { const v = $('cmVid'); if (cm.open && !v.paused && v.currentTime >= state.end - 0.04) v.currentTime = state.start; });
+if (window.ResizeObserver) new ResizeObserver(() => { if (cm.open) cmLayout(); }).observe($('cmStage'));
+window.addEventListener('resize', () => { if (cm.open) cmLayout(); });
+
+// Kéo / chụm / lăn chuột trong popup (zoom quanh điểm đang chạm)
+const cmPts = new Map();
+let cmG = { cx: 0, cy: 0, dist: 0 };
+function cmRead() {
+  const p = [...cmPts.values()];
+  if (p.length === 1) return { cx: p[0].x, cy: p[0].y, dist: 0 };
+  if (p.length >= 2) return { cx: (p[0].x + p[1].x) / 2, cy: (p[0].y + p[1].y) / 2, dist: Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) };
+  return null;
+}
+function cmZoomPan(k, fx, fy, dx, dy) {
+  const t = cm.t;
+  t.x = fx + k * (t.x - fx) + dx; t.y = fy + k * (t.y - fy) + dy; t.s *= k;
+  cmApply();
+}
+const cmStage = $('cmStage');
+cmStage.addEventListener('pointerdown', e => {
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  cmPts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  try { cmStage.setPointerCapture(e.pointerId); } catch (_) {}
+  const g = cmRead(); cmG = g;
+  cmStage.classList.add('gesturing');
+});
+cmStage.addEventListener('pointermove', e => {
+  if (!cmPts.has(e.pointerId)) return;
+  cmPts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  const g = cmRead(), rc = cmStage.getBoundingClientRect(), t = cm.t, zm = zminR(cm.d, cmRatio());
+  let k = 1;
+  if (cmPts.size >= 2 && cmG.dist > 0 && g.dist > 0) k = clamp(t.s * g.dist / cmG.dist, zm, MAX_ZOOM) / t.s;
+  cmZoomPan(k, (cmG.cx - (rc.left + cm.SW / 2)) / cm.fw, (cmG.cy - (rc.top + cm.SH / 2)) / cm.fh, (g.cx - cmG.cx) / cm.fw, (g.cy - cmG.cy) / cm.fh);
+  cmG = g;
+});
+const cmUp = e => {
+  cmPts.delete(e.pointerId);
+  const g = cmRead(); if (g) cmG = g;
+  if (!cmPts.size) cmStage.classList.remove('gesturing');
+};
+['pointerup', 'pointercancel'].forEach(n => cmStage.addEventListener(n, cmUp));
+cmStage.addEventListener('wheel', e => {
+  e.preventDefault();
+  const rc = cmStage.getBoundingClientRect(), t = cm.t, ns = clamp(t.s * Math.exp(-e.deltaY * 0.0015), zminR(cm.d, cmRatio()), MAX_ZOOM);
+  cmZoomPan(ns / t.s, (e.clientX - (rc.left + cm.SW / 2)) / cm.fw, (e.clientY - (rc.top + cm.SH / 2)) / cm.fh, 0, 0);
+}, { passive: false });
+cmStage.addEventListener('contextmenu', e => e.preventDefault());
+
+$('btnExport').addEventListener('click', runExport);
+$('qualSeg').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+  state.fast = b.dataset.q === 'fast';
+  $('qualSeg').querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+}));
+
+syncUI();
+})();
+</script>
+<script>
+(() => {
+  const b = document.body, $ = id => document.getElementById(id);
+  const names = { both: 'Ảnh + Video', image: 'Chỉ ảnh', video: 'Chỉ video' };
+  const openD = () => { b.classList.add('d-open'); $('menuBtn').setAttribute('aria-expanded', 'true'); $('drawer').setAttribute('aria-hidden', 'false'); };
+  const closeD = () => { b.classList.remove('d-open'); $('menuBtn').setAttribute('aria-expanded', 'false'); $('drawer').setAttribute('aria-hidden', 'true'); };
+  function go(v, scrollId) {
+    b.dataset.view = v; closeD();
+    if (scrollId) setTimeout(() => { const el = $(scrollId); if (el) el.scrollIntoView({ behavior: 'smooth' }); }, 40);
+    else window.scrollTo(0, 0);
+    if (v === 'studio') setTimeout(() => window.dispatchEvent(new Event('resize')), 40);
+    try { history.replaceState(null, '', '#' + v); } catch (e) {}
+  }
+  $('menuBtn').addEventListener('click', () => b.classList.contains('d-open') ? closeD() : openD());
+  $('dClose').addEventListener('click', closeD);
+  $('dOverlay').addEventListener('click', closeD);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeD(); });
+  document.querySelectorAll('[data-go]').forEach(el => el.addEventListener('click', e => { e.preventDefault(); go(el.dataset.go, el.dataset.scroll); }));
+  document.querySelectorAll('#modeSeg button').forEach(btn => btn.addEventListener('click', () => {
+    setTimeout(() => { const a = document.querySelector('#modeSeg .active'); if (a) $('modeName').textContent = names[a.dataset.mode]; }, 0);
+    go('studio');
+  }));
+  $('openModeMenu').addEventListener('click', openD);
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (ios) $('iosBar').hidden = false;
+  if (location.hash === '#studio') go('studio');
+})();
+</script>
+</body>
+</html>
